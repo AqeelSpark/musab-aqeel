@@ -1,0 +1,333 @@
+@import 'tailwindcss';
+
+/* Modern CSS — @layer for explicit cascade control, no specificity hacks */
+@layer base, components, utilities;
+
+/* Modern CSS — @property typed custom properties enable CSS variable transitions */
+@property --gradient-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --accent-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --border-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --glow-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/* Modern CSS — oklch() perceptually uniform color space */
+/* Modern CSS — color-mix() for derived values, no manual rgba */
+:root {
+  /* Base surfaces */
+  --color-bg:           oklch(8% 0 0);
+  --color-surface:      oklch(10% 0 0);
+  --color-surface-up:   oklch(12% 0 0);
+  --color-surface-high: oklch(15% 0 0);
+
+  /* Borders */
+  --color-border-sub:   oklch(16% 0 0);
+  --color-border:       oklch(22% 0 0);
+  --color-border-up:    oklch(30% 0 0);
+
+  /* Text */
+  --color-text-primary:   oklch(94% 0 0);
+  --color-text-secondary: oklch(50% 0 0);
+  --color-text-tertiary:  oklch(32% 0 0);
+
+  /* Accent — electric lime. Use sparingly. */
+  --color-accent:        oklch(93% 0.23 120);
+  --color-accent-muted:  color-mix(in oklch, var(--color-accent) 7%, transparent);
+  --color-accent-border: color-mix(in oklch, var(--color-accent) 18%, transparent);
+
+  /* Functional */
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(0% 0 0);
+
+  /* Modern CSS — easing as custom properties, consistent across CSS and JS */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-inout:  cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Modern CSS — clamp() fluid typography, no breakpoint font overrides needed */
+  --text-hero:    clamp(3rem, 8vw + 1rem, 7.5rem);
+  --text-section: clamp(2rem, 4vw + 0.5rem, 4rem);
+  --text-card:    clamp(1.25rem, 2vw + 0.25rem, 2rem);
+  --text-body-lg: clamp(1.125rem, 1vw + 0.5rem, 1.25rem);
+}
+
+/* Modern CSS — text-wrap: balance eliminates headline widows */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-bg);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-body), sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img, video, svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--color-accent) 30%, transparent);
+    color: var(--color-black);
+  }
+}
+
+/* Modern CSS — dvh accounts for dynamic browser chrome on mobile, vh does not */
+.hero {
+  min-height: 100dvh;
+}
+
+.mobile-nav-overlay {
+  height: 100svh; /* Modern CSS — svh: always fits even with browser chrome visible */
+}
+
+/* content-visibility removed: conflicts with GSAP ScrollTrigger position calculations */
+
+/* Noise texture overlay */
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Custom cursor — pointer devices only */
+@media (hover: hover) {
+  html.custom-cursor-active,
+  html.custom-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+/* Scrollbar — WebKit */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-up); }
+
+/* Marquee */
+@keyframes marquee-left {
+  0%   { transform: translateX(0) translateZ(0); }
+  100% { transform: translateX(-50%) translateZ(0); }
+}
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%) translateZ(0); }
+  100% { transform: translateX(0) translateZ(0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 40s linear infinite;
+}
+.animate-marquee-right {
+  animation: marquee-right 40s linear infinite;
+}
+
+/* Modern CSS — container queries: components respond to their container, not the viewport */
+.card-wrapper {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Modern CSS — native CSS nesting, no preprocessor */
+.nav-link {
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+  position: relative;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+
+  &[data-active='true'] {
+    color: var(--color-accent);
+  }
+
+  & .nav-link-underline {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  &:hover .nav-link-underline {
+    transform: scaleX(1);
+  }
+}
+
+/* Button base */
+@layer components {
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    background: transparent;
+    --accent-opacity: 0;
+    transition: border-color 0.3s var(--ease-out), --accent-opacity 0.3s ease;
+    background: color-mix(in oklch, var(--color-accent) calc(var(--accent-opacity) * 100%), transparent);
+
+    &:hover {
+      border-color: var(--color-accent);
+      --accent-opacity: 0.07;
+    }
+  }
+
+  .btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+
+    & .arrow {
+      transition: transform 0.3s var(--ease-out);
+    }
+
+    &:hover .arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--color-border-sub);
+    border-radius: 2px;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  .section-label {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-tertiary);
+  }
+}
+
+/* Modern CSS — subgrid for cross-card alignment without fixed heights */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1px;
+}
+
+/* Mask for marquee fade edges */
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* Form field styling */
+/* Modern CSS — :has() parent/relational selector */
+.form-field:has(input:focus),
+.form-field:has(textarea:focus),
+.form-field:has(select:focus) {
+  border-color: var(--color-border-up);
+}
+
+.form-field:has(input:not(:placeholder-shown)) .field-label,
+.form-field:has(textarea:not(:placeholder-shown)) .field-label {
+  color: var(--color-text-secondary);
+}
+
+/* Skeleton shimmer for image loading */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-shimmer {
+  background: var(--color-surface);
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-surface-up) 40%,
+      var(--color-surface-high) 50%,
+      var(--color-surface-up) 60%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+/* Tailwind v4 theme inline */
+@theme inline {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
