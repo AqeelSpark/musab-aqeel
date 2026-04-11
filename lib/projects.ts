@@ -10,7 +10,7 @@ export const projects: Project[] = [
     year: '2024',
     tags: ['Next.js', 'TypeScript', 'PostgreSQL', 'Tailwind CSS'],
     summary: 'A complete patient management and telehealth platform built from zero to production in three weeks. Real-time scheduling, video consultations, and automated billing integrated into a single dashboard.',
-    coverImage: '/projects/meridian_img.png', // PLACEHOLDER — update with real image
+    coverImage: '/projects/meridian_img.webp',
     problem: 'The client was running patient scheduling through three separate tools, losing data between handoffs, and spending hours on manual billing reconciliation. Their previous vendor quoted six months for a unified platform.',
     approach: 'I started with the data model, not the UI. Mapped every patient touchpoint, identified where data was being duplicated or lost, and designed a single PostgreSQL schema that eliminated the redundancy. Built the frontend as a progressive dashboard that loaded only the context each user role needed.',
     decisions: [
@@ -50,7 +50,7 @@ export const projects: Project[] = [
     year: '2024',
     tags: ['Next.js', 'Shopify', 'GSAP', 'Framer Motion'],
     summary: 'A headless Shopify storefront for a premium lifestyle brand. Custom product configurator, smooth scroll experiences, and conversion-optimized checkout flow.',
-    coverImage: '/projects/aura_img.png', // PLACEHOLDER — update with real image
+    coverImage: '/projects/aura_img.webp',
     problem: 'The brand had outgrown their Shopify theme. The existing storefront was slow, could not support their product customization requirements, and did not reflect the premium positioning they needed for an international audience.',
     approach: 'Built a headless storefront on Next.js using the Shopify Storefront API. Designed the product pages around the customization flow first, then worked backwards to the browse and discovery experience. Every interaction was considered for both desktop and mobile from the start.',
     decisions: [
@@ -86,7 +86,7 @@ export const projects: Project[] = [
     year: '2023',
     tags: ['React', 'Node.js', 'D3.js', 'WebSocket'],
     summary: 'A real-time analytics dashboard processing 50,000+ events per minute. Live data visualization, custom alert rules, and team collaboration features built for a data infrastructure startup.',
-    coverImage: '/projects/nexus_img.png', // PLACEHOLDER — update with real image
+    coverImage: '/projects/nexus_img.webp',
     problem: 'The startup had a powerful data pipeline but no way for their customers to interact with it visually. They needed a dashboard that could handle high-frequency data updates without degrading performance or usability.',
     approach: 'Designed the data flow architecture first. WebSocket connections deliver events to a client-side buffer that batches updates before hitting the rendering layer. D3.js handles the heavy visualization work while React manages the application shell and user interactions.',
     decisions: [
@@ -122,7 +122,7 @@ export const projects: Project[] = [
     year: '2023',
     tags: ['Next.js', 'GSAP', 'Webflow CMS', 'Tailwind CSS'],
     summary: 'A portfolio and case study site for a creative agency, featuring scroll-driven storytelling, rich animations, and a Webflow CMS backend for the non-technical team to manage content independently.',
-    coverImage: '/projects/vertex_img.png', // PLACEHOLDER — update with real image
+    coverImage: '/projects/vertex_img.webp',
     problem: 'The agency needed a site that demonstrated their creative capabilities but could be updated by a team with no development experience. Previous attempts with page builders produced sites that looked generic and performed poorly.',
     approach: 'Built the frontend in Next.js with GSAP handling all scroll-driven animations and page transitions. Connected Webflow as a headless CMS so the team can manage projects, case studies, and blog posts through a visual editor without touching code.',
     decisions: [
