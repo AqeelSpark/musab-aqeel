@@ -1,7 +1,76 @@
 'use client'
 
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import SplitText from '@/components/ui/SplitText'
 import RevealText from '@/components/ui/RevealText'
+
+const SCROLL_EPS = 2
+
+function AboutTerminalBlock({ children }: { children: ReactNode }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [fade, setFade] = useState({ left: false, right: false })
+
+  const updateFade = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    const hOverflow = scrollWidth > clientWidth + SCROLL_EPS
+    setFade({
+      left: hOverflow && scrollLeft > SCROLL_EPS,
+      right: hOverflow && scrollLeft + clientWidth < scrollWidth - SCROLL_EPS,
+    })
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    updateFade()
+    const ro = new ResizeObserver(updateFade)
+    ro.observe(el)
+    el.addEventListener('scroll', updateFade, { passive: true })
+    window.addEventListener('resize', updateFade)
+    return () => {
+      ro.disconnect()
+      el.removeEventListener('scroll', updateFade)
+      window.removeEventListener('resize', updateFade)
+    }
+  }, [updateFade])
+
+  const fadeBase =
+    'pointer-events-none absolute z-10 transition-opacity duration-200 ease-out'
+  const fadeSurface = { backgroundColor: 'var(--color-surface-up)' } as const
+
+  return (
+    <div className="relative min-w-0">
+      <div ref={scrollRef} className="overflow-x-auto">
+        {/* Padding lives on the pre so it’s part of scroll overflow — right inset stays when scrolled to end, without an extra padded frame. */}
+        <pre className="m-0 box-border inline-block min-w-full w-max max-w-none align-top p-5">
+          {children}
+        </pre>
+      </div>
+      <div
+        className={`${fadeBase} inset-y-0 left-0 w-10`}
+        style={{
+          ...fadeSurface,
+          opacity: fade.left ? 1 : 0,
+          maskImage: 'linear-gradient(to right, black, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, black, transparent)',
+        }}
+        aria-hidden
+      />
+      <div
+        className={`${fadeBase} inset-y-0 right-0 w-10`}
+        style={{
+          ...fadeSurface,
+          opacity: fade.right ? 1 : 0,
+          maskImage: 'linear-gradient(to left, black, transparent)',
+          WebkitMaskImage: 'linear-gradient(to left, black, transparent)',
+        }}
+        aria-hidden
+      />
+    </div>
+  )
+}
 
 const CODE_BLOCK = `const engagement = {
   scope:     'design to deployment',
@@ -95,7 +164,7 @@ export default function About() {
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--color-border-up)' }} />
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--color-border-up)' }} />
             </div>
-            <pre className="p-5 overflow-x-auto">
+            <AboutTerminalBlock>
               <code
                 className="text-[13px] leading-[1.7]"
                 style={{ fontFamily: 'var(--font-mono), monospace' }}
@@ -114,7 +183,7 @@ export default function About() {
                   </div>
                 ))}
               </code>
-            </pre>
+            </AboutTerminalBlock>
           </div>
         </RevealText>
       </div>
