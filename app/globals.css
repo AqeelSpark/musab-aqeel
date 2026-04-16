@@ -304,6 +304,141 @@ h4 {
     letter-spacing: 0.1em;
     color: var(--color-text-tertiary);
   }
+
+  /**
+   * Site header — mesh + accent wash; glass when scrolled.
+   * data-state: idle | scrolled | menu
+   */
+  .site-header {
+    position: relative;
+    isolation: isolate;
+    border-bottom: 0.5px solid transparent;
+    /* blur(0) not `none` so backdrop-filter can interpolate when scrolling */
+    transition:
+      background-color 0.55s var(--ease-smooth),
+      backdrop-filter 0.6s var(--ease-smooth),
+      -webkit-backdrop-filter 0.6s var(--ease-smooth),
+      border-bottom-color 0.55s var(--ease-smooth),
+      box-shadow 0.6s var(--ease-smooth);
+  }
+
+  .site-header[data-state='idle'],
+  .site-header[data-state='menu'] {
+    background-color: transparent;
+    backdrop-filter: blur(0) saturate(1);
+    -webkit-backdrop-filter: blur(0) saturate(1);
+    border-bottom-color: transparent;
+    box-shadow: none;
+  }
+
+  .site-header[data-state='scrolled'] {
+    background-color: color-mix(in oklch, var(--color-bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border-bottom-color: color-mix(
+      in oklch,
+      var(--color-border-sub) 85%,
+      transparent
+    );
+    box-shadow:
+      0 1px 0 color-mix(in oklch, var(--color-accent) 12%, transparent),
+      0 12px 40px color-mix(in oklch, var(--color-black) 35%, transparent);
+  }
+
+  /* Radial accent + fine grid — sits above page, below nav content */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    transition: opacity 0.55s var(--ease-smooth);
+    background:
+      radial-gradient(
+        ellipse 95% 90% at 50% -35%,
+        color-mix(in oklch, var(--color-accent) 14%, transparent),
+        transparent 58%
+      ),
+      repeating-linear-gradient(
+        105deg,
+        color-mix(in oklch, var(--color-border) 10%, transparent) 0,
+        color-mix(in oklch, var(--color-border) 10%, transparent) 1px,
+        transparent 1px,
+        transparent 10px
+      );
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 55%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 55%,
+      transparent 100%
+    );
+  }
+
+  .site-header[data-state='scrolled']::before {
+    opacity: 0.95;
+  }
+
+  .site-header[data-state='menu']::before {
+    opacity: 0.18;
+  }
+
+  /* Slow-moving accent line along bottom edge */
+  .site-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--color-accent) 45%, transparent) 42%,
+      color-mix(in oklch, var(--color-accent) 65%, transparent) 50%,
+      color-mix(in oklch, var(--color-accent) 45%, transparent) 58%,
+      transparent 100%
+    );
+    background-size: 180% 100%;
+    background-position: 0% 50%;
+    transition: opacity 0.55s var(--ease-smooth);
+  }
+
+  .site-header[data-state='scrolled']::after {
+    opacity: 0.65;
+    animation: site-header-edge-drift 10s ease-in-out infinite;
+  }
+
+  .site-header[data-state='menu']::after {
+    opacity: 0;
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header[data-state='scrolled']::after {
+      animation: none;
+      opacity: 0.45;
+    }
+  }
+}
+
+@keyframes site-header-edge-drift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* Modern CSS - subgrid for cross-card alignment without fixed heights */
@@ -453,6 +588,35 @@ h4 {
   .glitch-404::after {
     animation: none;
   }
+
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation-play-state: paused;
+  }
+}
+
+/* Skip link — visually hidden until focused */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  z-index: 10001;
+  border-radius: 2px;
+  transition: top 0.15s ease;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+  outline: 2px solid var(--color-bg);
+  outline-offset: 2px;
 }
 
 /* Tailwind v4 theme inline - exposes font-display, font-body, font-mono utilities */

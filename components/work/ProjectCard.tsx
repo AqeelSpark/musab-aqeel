@@ -43,20 +43,24 @@ export default function ProjectCard({
       if (section) {
         const allCards = Array.from(section.querySelectorAll('.card-wrapper'))
         const others = allCards.filter((el) => el !== card)
-        gsap.to(others, {
-          opacity: 0,
-          y: 12,
-          duration: 0.3,
-          ease: 'power2.in',
-          stagger: 0.03,
-        })
+        if (others.length > 0) {
+          gsap.to(others, {
+            opacity: 0,
+            y: 12,
+            duration: 0.3,
+            ease: 'power2.in',
+            stagger: 0.03,
+          })
+        }
 
         const chrome = Array.from(
           section.querySelectorAll(
-            '[class*="section-label"], h2, [class*="btn-"], a[href="/work"]',
+            '[class*="section-label"], h2, h1, [class*="btn-"], a[href="/work"]',
           ),
         )
-        gsap.to(chrome, { opacity: 0, duration: 0.25, ease: 'power2.in' })
+        if (chrome.length > 0) {
+          gsap.to(chrome, { opacity: 0, duration: 0.25, ease: 'power2.in' })
+        }
       }
 
       const meta = card.querySelector('.card-meta')
@@ -66,6 +70,7 @@ export default function ProjectCard({
 
       setTimeout(() => {
         router.push(`/work/${project.slug}`)
+        transitioning.current = false
       }, 350)
     },
     [project.slug, router],
@@ -91,7 +96,7 @@ export default function ProjectCard({
             src={project.coverImage}
             alt={project.title}
             fill
-            className={`object-cover transition-all duration-700 group-hover:scale-[1.03] ${loaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`max-w-none object-cover transition-all duration-700 group-hover:scale-[1.03] ${loaded ? 'opacity-100' : 'opacity-0'}`}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onLoad={() => setLoaded(true)}
           />

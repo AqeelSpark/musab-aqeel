@@ -2,6 +2,40 @@ import { NextResponse } from 'next/server'
 import { FAVICON_96_URL, SITE_DOMAIN } from '@/lib/config'
 import type { ContactPayload } from '@/types'
 
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+const RATE_LIMIT_MAX = 5
+const RATE_LIMIT_WINDOW_MS = 60_000
+const rateLimit = new Map<string, { count: number; resetAt: number }>()
+
+function getRateLimitKey(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  return forwarded?.split(',')[0]?.trim() ?? 'unknown'
+}
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now()
+  const entry = rateLimit.get(key)
+  if (!entry || now > entry.resetAt) {
+    rateLimit.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false
+  entry.count++
+  return true
+}
+
+// ─── Validation ───────────────────────────────────────────────────────────────
+const EMAIL_REGEX =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
+const FIELD_LIMITS = {
+  name: 100,
+  email: 254,
+  message: 2000,
+  budget: 50,
+  projectType: 100,
+} as const
+
 type ParseContactPayloadResult =
   | { success: true; data: ContactPayload }
   | { success: false; error: string }
@@ -30,15 +64,28 @@ function parseContactPayload(value: unknown): ParseContactPayloadResult {
     return { success: false, error: 'Missing required fields' }
   }
 
+  if (name.length > FIELD_LIMITS.name) {
+    return { success: false, error: 'Name is too long' }
+  }
+
+  if (!EMAIL_REGEX.test(email) || email.length > FIELD_LIMITS.email) {
+    return { success: false, error: 'Invalid email address' }
+  }
+
+  if (message.length > FIELD_LIMITS.message) {
+    return { success: false, error: `Message is too long (max ${FIELD_LIMITS.message} characters)` }
+  }
+
+  const budget = normalizeField(body.budget) ?? ''
+  const projectType = normalizeField(body.projectType) ?? ''
+
+  if (budget.length > FIELD_LIMITS.budget || projectType.length > FIELD_LIMITS.projectType) {
+    return { success: false, error: 'Field value exceeds maximum length' }
+  }
+
   return {
     success: true,
-    data: {
-      name,
-      email,
-      budget: normalizeField(body.budget) ?? '',
-      projectType: normalizeField(body.projectType) ?? '',
-      message,
-    },
+    data: { name, email, budget, projectType, message },
   }
 }
 
@@ -149,6 +196,14 @@ function buildWebhookPayload(
 
 export async function POST(request: Request) {
   try {
+    const key = getRateLimitKey(request)
+    if (!checkRateLimit(key)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      )
+    }
+
     let rawBody: unknown
     try {
       rawBody = await request.json()
@@ -171,8 +226,11 @@ export async function POST(request: Request) {
 
     const webhookUrl = process.env.CONTACT_WEBHOOK_URL
     if (!webhookUrl) {
-      console.warn('CONTACT_WEBHOOK_URL not configured')
-      return NextResponse.json({ success: true })
+      console.error('CONTACT_WEBHOOK_URL is not configured — message not delivered')
+      return NextResponse.json(
+        { success: false, error: 'Contact form is not configured. Please email directly.' },
+        { status: 503 },
+      )
     }
 
     const webhookRes = await fetch(webhookUrl, {

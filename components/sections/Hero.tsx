@@ -6,11 +6,13 @@ import { gsap } from 'gsap'
 import SplitText from '@/components/ui/SplitText'
 import MagneticButton from '@/components/ui/MagneticButton'
 import { useLoader } from '@/lib/LoaderContext'
+import { useLenisRef } from '@/lib/lenis-context'
 import { duration, ease, scroll } from '@/lib/motion'
 
 export default function Hero() {
   const scrollLineRef = useRef<HTMLDivElement>(null)
   const { isReadyToAnimate } = useLoader()
+  const lenisRef = useLenisRef()
 
   const fadeUp = (delay: number) => ({
     initial: { opacity: 0, y: 12 } as const,
@@ -38,8 +40,12 @@ export default function Hero() {
   }, [isReadyToAnimate])
 
   function scrollToSection(href: string) {
-    const el = document.querySelector(href)
-    if (el) {
+    const el = document.querySelector<HTMLElement>(href)
+    if (!el) return
+    const lenis = lenisRef.current
+    if (lenis) {
+      lenis.scrollTo(el, { offset: -scroll.headerOffset, duration: 0.8 })
+    } else {
       const y =
         el.getBoundingClientRect().top + window.scrollY - scroll.headerOffset
       window.scrollTo({ top: y, behavior: 'smooth' })

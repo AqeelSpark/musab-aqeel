@@ -18,6 +18,13 @@ export const metadata: Metadata = {
     title: PAGE_TITLE_WORK,
     description: workDescription,
     url: '/work',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: PAGE_TITLE_WORK,
+    description: workDescription,
+    images: ['/twitter-image'],
   },
 }
 

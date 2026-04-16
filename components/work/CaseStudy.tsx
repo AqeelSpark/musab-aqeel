@@ -37,8 +37,8 @@ export default function CaseStudy({ project }: CaseStudyProps) {
           alt={project.title}
           fill
           priority
-          className={`object-cover transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
-          sizes="100vw"
+          className={`max-w-none object-cover transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+          sizes="(max-width: 768px) 100vw, 100vw"
           onLoad={() => setHeroLoaded(true)}
         />
         <div

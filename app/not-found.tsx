@@ -4,6 +4,7 @@ import { PAGE_TITLE_NOT_FOUND, SITE_DOMAIN } from '@/lib/config'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE_NOT_FOUND,
+  description: 'The page you are looking for does not exist.',
   robots: { index: false, follow: false },
 }
 
@@ -15,7 +16,8 @@ export default function NotFound() {
         className="mb-8 font-mono text-xs tracking-widest uppercase"
         style={{ color: 'var(--color-text-tertiary)' }}
       >
-        {'// Error 404'}
+        <span aria-hidden="true">{'// '}</span>
+        Error 404
       </span>
 
       {/* Center: massive 404 + message */}

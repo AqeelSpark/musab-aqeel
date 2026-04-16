@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
@@ -13,6 +13,7 @@ export default function MainWrapper({ children }: { children: ReactNode }) {
   const { isLoading, setIsReadyToAnimate } = useLoader()
   const hasAnimated = useRef(false)
   const [revealed, setRevealed] = useState(false)
+  const tlRef = useRef<gsap.core.Timeline | null>(null)
 
   useGSAP(
     () => {
@@ -22,24 +23,37 @@ export default function MainWrapper({ children }: { children: ReactNode }) {
       window.scrollTo(0, 0)
 
       const loaderEl = document.querySelector('.loader') as HTMLElement | null
+      const loaderContent = document.querySelector(
+        '.loader-content',
+      ) as HTMLElement | null
+      const wrapper = wrapperRef.current
+
+      if (!loaderEl || !loaderContent || !wrapper) {
+        if (loaderEl) loaderEl.style.visibility = 'hidden'
+        setRevealed(true)
+        setIsReadyToAnimate(true)
+        requestAnimationFrame(() => ScrollTrigger.refresh())
+        return
+      }
 
       const tl = gsap.timeline({
         onComplete: () => {
-          if (loaderEl) loaderEl.style.visibility = 'hidden'
+          loaderEl.style.visibility = 'hidden'
           setRevealed(true)
           setIsReadyToAnimate(true)
           requestAnimationFrame(() => ScrollTrigger.refresh())
         },
       })
+      tlRef.current = tl
 
-      tl.to('.loader-content', {
+      tl.to(loaderContent, {
         opacity: 0,
         duration: 0.4,
         ease: 'power2.in',
       })
 
       tl.to(
-        '.loader',
+        loaderEl,
         {
           clipPath: 'inset(0% 0% 100% 0%)',
           duration: 1.2,
@@ -49,8 +63,8 @@ export default function MainWrapper({ children }: { children: ReactNode }) {
       )
 
       tl.fromTo(
-        wrapperRef.current,
-        { clipPath: 'inset(100% 0% 0% 0%)' },
+        wrapper,
+        { clipPath: 'inset(0% 0% 100% 0%)' },
         {
           clipPath: 'inset(0% 0% 0% 0%)',
           duration: 1.2,
@@ -63,10 +77,16 @@ export default function MainWrapper({ children }: { children: ReactNode }) {
     { dependencies: [isLoading] },
   )
 
+  useEffect(() => {
+    return () => {
+      tlRef.current?.kill()
+    }
+  }, [])
+
   return (
     <div
       ref={wrapperRef}
-      style={revealed ? undefined : { clipPath: 'inset(100% 0% 0% 0%)' }}
+      style={revealed ? undefined : { clipPath: 'inset(0% 0% 100% 0%)' }}
     >
       {children}
     </div>

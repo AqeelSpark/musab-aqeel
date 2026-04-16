@@ -6,8 +6,9 @@ export function useScrollTriggerCleanup() {
 
   const cleanup = useCallback(() => {
     if (!scrollTriggerRef.current) return
-
+    const anim = scrollTriggerRef.current.animation
     scrollTriggerRef.current.kill()
+    anim?.kill()
     scrollTriggerRef.current = null
   }, [])
 

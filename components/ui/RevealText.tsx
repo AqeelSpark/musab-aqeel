@@ -1,57 +1,120 @@
 'use client'
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useId, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import DustFilterSvg from '@/components/ui/DustFilterSvg'
 import { useScrollTriggerCleanup } from '@/components/ui/useScrollTriggerCleanup'
 import { useLoader } from '@/lib/LoaderContext'
-import { scroll } from '@/lib/motion'
+import { dust, scroll } from '@/lib/motion'
+import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 interface RevealTextProps {
   children: ReactNode
   className?: string
+  /**
+   * Offsets the ScrollTrigger start so nested blocks can feel slightly staggered
+   * (approx. pixels added to `start`; scroll-synced only).
+   */
   delay?: number
-  scrub?: boolean
 }
 
 export default function RevealText({
   children,
   className = '',
   delay = 0,
-  scrub = true,
 }: RevealTextProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const displacementRef = useRef<SVGFEDisplacementMapElement | null>(null)
+  const reactId = useId()
+  const filterId = `dust-${reactId.replace(/:/g, '')}`
   const { isReadyToAnimate } = useLoader()
   const { cleanup, scrollTriggerRef } = useScrollTriggerCleanup()
+  const reducedMotion = usePrefersReducedMotion()
 
-  useEffect(() => {
-    if (!ref.current || !isReadyToAnimate) return
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || !isReadyToAnimate) return
 
-    gsap.set(ref.current, { opacity: 0, y: 30 })
+    cleanup()
 
-    const tween = gsap.to(ref.current, {
-      opacity: 1,
-      y: 0,
-      duration: scrub ? 1 : 0.7,
-      ease: scrub ? 'none' : 'power3.out',
-      delay: scrub ? 0 : delay,
-      scrollTrigger: {
-        trigger: ref.current,
-        start: scroll.revealStart,
-        end: scroll.revealEnd,
-        scrub: scrub ? 0.3 : false,
-        once: !scrub,
-        invalidateOnRefresh: true,
-      },
+    const start =
+      delay !== 0
+        ? `${scroll.revealStart}+=${Math.round(delay * 72)}`
+        : scroll.revealStart
+
+    const fe = displacementRef.current
+    const useDust = !reducedMotion && fe
+
+    if (useDust) {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: el,
+          start,
+          end: scroll.revealEnd,
+          scrub: scroll.revealScrub,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      tl.fromTo(
+        el,
+        { opacity: 0, y: 32 },
+        { opacity: 1, y: 0, ease: 'none', duration: 1 },
+        0,
+      ).fromTo(
+        fe,
+        { attr: { scale: dust.maxDisplacement } },
+        { attr: { scale: 0 }, ease: 'none', duration: 1 },
+        0,
+      )
+
+      scrollTriggerRef.current = tl.scrollTrigger ?? null
+    } else {
+      const tween = gsap.fromTo(
+        el,
+        { opacity: 0, y: 32 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: el,
+            start,
+            end: scroll.revealEnd,
+            scrub: scroll.revealScrub,
+            invalidateOnRefresh: true,
+          },
+        },
+      )
+      scrollTriggerRef.current = tween.scrollTrigger ?? null
+    }
+
+    const raf = requestAnimationFrame(() => {
+      ScrollTrigger.refresh()
     })
 
-    scrollTriggerRef.current = tween.scrollTrigger ?? null
+    return () => {
+      cancelAnimationFrame(raf)
+      cleanup()
+    }
+  }, [delay, cleanup, isReadyToAnimate, reducedMotion])
 
-    return cleanup
-  }, [delay, scrub, cleanup, isReadyToAnimate, scrollTriggerRef])
+  const dustActive = !reducedMotion
 
   return (
-    <div ref={ref} data-reveal className={className}>
-      {children}
-    </div>
+    <>
+      {dustActive && (
+        <DustFilterSvg id={filterId} displacementRef={displacementRef} />
+      )}
+      <div
+        ref={ref}
+        data-reveal
+        className={className}
+        style={dustActive ? { filter: `url(#${filterId})` } : undefined}
+      >
+        {children}
+      </div>
+    </>
   )
 }

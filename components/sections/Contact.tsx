@@ -7,6 +7,14 @@ import MagneticButton from '@/components/ui/MagneticButton'
 import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from '@/lib/config'
 import type { ContactFormStatus, ContactPayload } from '@/types'
 
+const INPUT_STYLE = {
+  backgroundColor: 'var(--color-surface-up)',
+  border: '1px solid var(--color-border)',
+  color: 'var(--color-text-primary)',
+} as const
+
+const LABEL_STYLE = { color: 'var(--color-text-tertiary)' } as const
+
 const BUDGET_OPTIONS = [
   'Under $1k',
   '$1k - $5k',
@@ -57,6 +65,7 @@ const SelectArrow = () => (
 
 export default function Contact() {
   const [status, setStatus] = useState<ContactFormStatus>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
   const [form, setForm] = useState<ContactPayload>(EMPTY_CONTACT_FORM)
 
   useEffect(() => {
@@ -68,6 +77,7 @@ export default function Contact() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setStatus('sending')
+    setErrorMessage('')
 
     try {
       const res = await fetch('/api/contact', {
@@ -78,11 +88,18 @@ export default function Contact() {
 
       if (res.ok) {
         setStatus('sent')
-        setForm(EMPTY_CONTACT_FORM)
+        setForm({ ...EMPTY_CONTACT_FORM })
       } else {
+        const data = await res.json().catch(() => ({}))
+        setErrorMessage(
+          typeof data.error === 'string'
+            ? data.error
+            : 'Something went wrong. Try emailing me directly.',
+        )
         setStatus('error')
       }
     } catch {
+      setErrorMessage('Something went wrong. Try emailing me directly.')
       setStatus('error')
     }
   }
@@ -93,14 +110,7 @@ export default function Contact() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const inputStyle = {
-    backgroundColor: 'var(--color-surface-up)',
-    border: '1px solid var(--color-border)',
-    color: 'var(--color-text-primary)',
-  }
-
   const labelClass = 'block mb-1.5 text-xs uppercase tracking-widest font-mono'
-  const labelStyle = { color: 'var(--color-text-tertiary)' }
   const inputClass =
     'w-full pl-4 pr-4 py-3 text-sm rounded-[2px] outline-none transition-colors duration-200 font-body'
 
@@ -188,13 +198,22 @@ export default function Contact() {
 
         {/* Right column - form */}
         <div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-5"
+            aria-busy={status === 'sending'}
+          >
             <RevealText delay={0.05}>
               <div className="form-field">
-                <label className={labelClass} style={labelStyle}>
+                <label
+                  htmlFor="contact-name"
+                  className={labelClass}
+                  style={LABEL_STYLE}
+                >
                   Name
                 </label>
                 <input
+                  id="contact-name"
                   type="text"
                   name="name"
                   required
@@ -202,17 +221,22 @@ export default function Contact() {
                   onChange={handleChange}
                   placeholder="Your name"
                   className={inputClass}
-                  style={inputStyle}
+                  style={INPUT_STYLE}
                 />
               </div>
             </RevealText>
 
             <RevealText delay={0.1}>
               <div className="form-field">
-                <label className={labelClass} style={labelStyle}>
+                <label
+                  htmlFor="contact-email"
+                  className={labelClass}
+                  style={LABEL_STYLE}
+                >
                   Email
                 </label>
                 <input
+                  id="contact-email"
                   type="email"
                   name="email"
                   required
@@ -220,7 +244,7 @@ export default function Contact() {
                   onChange={handleChange}
                   placeholder="your@email.com"
                   className={inputClass}
-                  style={inputStyle}
+                  style={INPUT_STYLE}
                 />
               </div>
             </RevealText>
@@ -228,18 +252,23 @@ export default function Contact() {
             <RevealText delay={0.15}>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="form-field">
-                  <label className={labelClass} style={labelStyle}>
+                  <label
+                    htmlFor="contact-budget"
+                    className={labelClass}
+                    style={LABEL_STYLE}
+                  >
                     Budget
                   </label>
                   <div className="relative">
                     <select
+                      id="contact-budget"
                       name="budget"
                       required
                       value={form.budget}
                       onChange={handleChange}
                       className={`${inputClass} appearance-none pr-10`}
                       style={{
-                        ...inputStyle,
+                        ...INPUT_STYLE,
                         color: form.budget
                           ? 'var(--color-text-primary)'
                           : 'var(--color-text-tertiary)',
@@ -258,18 +287,23 @@ export default function Contact() {
                   </div>
                 </div>
                 <div className="form-field">
-                  <label className={labelClass} style={labelStyle}>
+                  <label
+                    htmlFor="contact-project-type"
+                    className={labelClass}
+                    style={LABEL_STYLE}
+                  >
                     Project type
                   </label>
                   <div className="relative">
                     <select
+                      id="contact-project-type"
                       name="projectType"
                       required
                       value={form.projectType}
                       onChange={handleChange}
                       className={`${inputClass} appearance-none pr-10`}
                       style={{
-                        ...inputStyle,
+                        ...INPUT_STYLE,
                         color: form.projectType
                           ? 'var(--color-text-primary)'
                           : 'var(--color-text-tertiary)',
@@ -292,10 +326,15 @@ export default function Contact() {
 
             <RevealText delay={0.2}>
               <div className="form-field">
-                <label className={labelClass} style={labelStyle}>
+                <label
+                  htmlFor="contact-message"
+                  className={labelClass}
+                  style={LABEL_STYLE}
+                >
                   Project brief
                 </label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   required
                   value={form.message}
@@ -303,7 +342,7 @@ export default function Contact() {
                   placeholder="Tell me about your project"
                   rows={4}
                   className={`${inputClass} resize-none`}
-                  style={inputStyle}
+                  style={INPUT_STYLE}
                 />
               </div>
             </RevealText>
@@ -317,22 +356,23 @@ export default function Contact() {
                     : 'Send message'}
               </MagneticButton>
 
-              {status === 'sent' && (
-                <p
-                  className="mt-4 text-center font-mono text-xs"
-                  style={{ color: 'var(--color-accent)' }}
-                >
-                  Message received. I will be in touch within 24 hours.
-                </p>
-              )}
-              {status === 'error' && (
-                <p
-                  className="mt-4 text-center font-mono text-xs"
-                  style={{ color: 'var(--color-error)' }}
-                >
-                  Something went wrong. Try emailing me directly.
-                </p>
-              )}
+              <div
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                className="mt-4 text-center font-mono text-xs"
+              >
+                {status === 'sent' && (
+                  <p style={{ color: 'var(--color-accent)' }}>
+                    Message received. I will be in touch within 24 hours.
+                  </p>
+                )}
+                {status === 'error' && (
+                  <p style={{ color: 'var(--color-error)' }}>
+                    {errorMessage}
+                  </p>
+                )}
+              </div>
             </RevealText>
           </form>
         </div>

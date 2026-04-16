@@ -66,7 +66,7 @@ export function projectJsonLd(
     description: project.summary,
     image: `${SITE_URL}${project.coverImage}`,
     url: `${SITE_URL}/work/${project.slug}`,
-    dateCreated: project.year,
+    dateCreated: `${project.year}-01-01`,
     keywords: project.tags.join(', '),
     creator: {
       '@type': 'Person',

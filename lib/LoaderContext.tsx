@@ -9,6 +9,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
+import { LOADER_DURATION_MS } from '@/lib/motion'
 
 interface LoaderContextValue {
   isLoading: boolean
@@ -39,11 +40,26 @@ export function LoaderProvider({ children }: { children: ReactNode }) {
 
   const trackImages = useCallback(() => {
     return new Promise<void>((resolve) => {
+      let settled = false
+      const safeResolve = () => {
+        if (settled) return
+        settled = true
+        clearTimeout(fallbackTimer)
+        resolve()
+      }
+
+      // Hard cap: never block the loader for more than 8 seconds regardless of
+      // images that never fire load or error (lazy images, ad-blocked assets, etc.)
+      const fallbackTimer = setTimeout(() => {
+        setProgress(100)
+        safeResolve()
+      }, 8000)
+
       const check = () => {
         const imgs = Array.from(document.querySelectorAll('img'))
         if (imgs.length === 0) {
           setProgress(100)
-          resolve()
+          safeResolve()
           return
         }
 
@@ -53,7 +69,7 @@ export function LoaderProvider({ children }: { children: ReactNode }) {
         const tick = () => {
           loaded++
           setProgress(Math.min(Math.round((loaded / total) * 100), 100))
-          if (loaded >= total) resolve()
+          if (loaded >= total) safeResolve()
         }
 
         for (const img of imgs) {
@@ -68,13 +84,13 @@ export function LoaderProvider({ children }: { children: ReactNode }) {
 
       if (document.readyState === 'complete') {
         setProgress(100)
-        resolve()
+        safeResolve()
       } else {
         window.addEventListener(
           'load',
           () => {
             setProgress(100)
-            resolve()
+            safeResolve()
           },
           { once: true },
         )
@@ -105,7 +121,7 @@ export function LoaderProvider({ children }: { children: ReactNode }) {
     setTimeout(() => {
       timerDone = true
       checkBothDone()
-    }, 3500)
+    }, LOADER_DURATION_MS)
 
     trackImages().then(() => {
       assetsDone = true

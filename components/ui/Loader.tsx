@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useLoader } from '@/lib/LoaderContext'
+import { LOADER_DURATION_MS } from '@/lib/motion'
 
 const TEXTS = ['Developer', 'Architect', 'Operator', 'Loading']
 const MORPH_TIME = 0.8
 const COOLDOWN_TIME = 0.3
-const LOADER_DURATION = 3500
 
 export default function Loader() {
   const { isLoading, progress, assetsReady } = useLoader()
@@ -90,7 +90,7 @@ export default function Loader() {
 
       // --- Counter ---
       if (assetsReadyRef.current) {
-        const linearTarget = Math.min((elapsed / LOADER_DURATION) * 100, 100)
+        const linearTarget = Math.min((elapsed / LOADER_DURATION_MS) * 100, 100)
         if (linearTarget >= 100) {
           displayRef.current += (100 - displayRef.current) * 0.12
         } else {
@@ -154,6 +154,8 @@ export default function Loader() {
         background:
           'linear-gradient(135deg, oklch(0% 0 0) 0%, oklch(12% 0.01 80) 50%, var(--color-bg) 100%)',
       }}
+      role="status"
+      aria-label={`Loading — ${displayProgress}%`}
       aria-hidden={!isLoading}
     >
       <div className="loader-content relative flex h-full w-full flex-col items-center justify-center">
@@ -162,7 +164,7 @@ export default function Loader() {
           className="relative w-full"
           style={{
             height: '80pt',
-            filter: 'url(#threshold) blur(0.45px)',
+            filter: 'url(#threshold)',
           }}
         >
           <span
@@ -183,10 +185,22 @@ export default function Loader() {
         </div>
       </div>
 
-      {/* SVG threshold filter */}
-      <svg className="absolute h-0 w-0" aria-hidden="true">
+      {/* SVG threshold filter — blur is kept inside the filter chain so mobile
+          browsers don't have to handle a combined url()+blur() CSS filter,
+          which iOS Safari drops silently. */}
+      <svg
+        style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+        aria-hidden="true"
+      >
         <defs>
-          <filter id="threshold">
+          <filter
+            id="threshold"
+            x="-10%"
+            y="-10%"
+            width="120%"
+            height="120%"
+            colorInterpolationFilters="sRGB"
+          >
             <feColorMatrix
               in="SourceGraphic"
               type="matrix"
@@ -194,7 +208,9 @@ export default function Loader() {
                       0 1 0 0 0
                       0 0 1 0 0
                       0 0 0 255 -140"
+              result="thresholded"
             />
+            <feGaussianBlur in="thresholded" stdDeviation="0.45" />
           </filter>
         </defs>
       </svg>

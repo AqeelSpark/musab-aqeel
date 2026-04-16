@@ -31,8 +31,11 @@ const NAV_LINKS: readonly NavLink[] = [
 
 const HOME_PATH = '/'
 const HEADER_SCROLL_THRESHOLD = 60
+/** Below this while already “scrolled”, release to idle (avoids flicker at the threshold). */
+const HEADER_SCROLL_RELEASE = 28
 const ACTIVE_SECTION_THRESHOLD = 120
-const MOBILE_MENU_RESTART_DELAY_MS = 450
+/** After close: wait for clip + staggered exit before restoring scroll */
+const MOBILE_MENU_RESTART_DELAY_MS = 1000
 const MOBILE_SCROLL_DELAY_MS = 100
 const MOBILE_MENU_OPEN_CLIP_PATH = 'circle(160% at calc(100% - 40px) 36px)'
 const MOBILE_MENU_CLOSED_CLIP_PATH = 'circle(0% at calc(100% - 40px) 36px)'
@@ -138,15 +141,44 @@ function scrollToSection(
 
 function useHeaderScrolledState() {
   const [scrolled, setScrolled] = useState(false)
+  const lenisRef = useLenisRef()
 
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > HEADER_SCROLL_THRESHOLD)
+    function readScrollY(lenis: Lenis | null): number {
+      return lenis ? lenis.scroll : window.scrollY
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    function update() {
+      const y = readScrollY(lenisRef.current)
+      setScrolled((prev) =>
+        prev ? y > HEADER_SCROLL_RELEASE : y > HEADER_SCROLL_THRESHOLD,
+      )
+    }
+
+    update()
+
+    window.addEventListener('scroll', update, { passive: true })
+
+    let unsubscribeLenis: (() => void) | undefined
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      const attach = () => {
+        const lenis = lenisRef.current
+        if (lenis) unsubscribeLenis = lenis.on('scroll', update)
+      }
+      attach()
+      if (!unsubscribeLenis) {
+        raf2 = requestAnimationFrame(attach)
+      }
+    })
+
+    return () => {
+      cancelAnimationFrame(raf1)
+      if (raf2) cancelAnimationFrame(raf2)
+      window.removeEventListener('scroll', update)
+      unsubscribeLenis?.()
+    }
+  }, [lenisRef])
 
   return scrolled
 }
@@ -161,6 +193,14 @@ function useActiveSectionState(pathname: string, isReadyToAnimate: boolean) {
 
   const syncActiveSection = useCallback(() => {
     if (isProgrammaticScrollRef.current) return
+    setActiveSection(getActiveSection())
+  }, [getActiveSection])
+
+  // Bypasses the programmatic-scroll guard so the mobile menu always opens
+  // showing the section the user is actually at, even if a Lenis scroll was
+  // interrupted (which would leave isProgrammaticScrollRef stuck at true).
+  const forceSyncActiveSection = useCallback(() => {
+    isProgrammaticScrollRef.current = false
     setActiveSection(getActiveSection())
   }, [getActiveSection])
 
@@ -197,6 +237,7 @@ function useActiveSectionState(pathname: string, isReadyToAnimate: boolean) {
     activeSection,
     beginProgrammaticScroll,
     finishProgrammaticScroll,
+    forceSyncActiveSection,
     resetActiveSection,
     setActiveSection,
     syncActiveSection,
@@ -207,7 +248,7 @@ function useMobileMenuEffects(
   mobileOpen: boolean,
   lenisRef: LenisRef,
   menuRef: RefObject<HTMLDivElement | null>,
-  syncActiveSection: () => void,
+  forceSyncActiveSection: () => void,
   setMobileOpen: Dispatch<SetStateAction<boolean>>,
 ) {
   const hasOpenedRef = useRef(false)
@@ -239,12 +280,14 @@ function useMobileMenuEffects(
   useEffect(() => {
     if (!mobileOpen) return
 
-    syncActiveSection()
+    // Force-compute the real active section, cancelling any stuck programmatic
+    // scroll flag that would have blocked the regular syncActiveSection guard.
+    forceSyncActiveSection()
 
     const menuEl = menuRef.current
     const focusTimer = window.setTimeout(() => {
       getFocusableElements(menuEl)[0]?.focus({ preventScroll: true })
-    }, 350)
+    }, 520)
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -278,7 +321,7 @@ function useMobileMenuEffects(
       window.clearTimeout(focusTimer)
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [menuRef, mobileOpen, setMobileOpen, syncActiveSection])
+  }, [menuRef, mobileOpen, setMobileOpen, forceSyncActiveSection])
 }
 
 function DesktopNavLinks({
@@ -320,7 +363,7 @@ function DesktopActions({
           border: '1px solid var(--color-border)',
         }}
       >
-        <span className="relative flex h-1.5 w-1.5">
+        <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
           <span
             className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
             style={{ backgroundColor: 'var(--color-accent)' }}
@@ -375,11 +418,17 @@ function MobileMenu({
       initial={{ clipPath: MOBILE_MENU_CLOSED_CLIP_PATH }}
       animate={{
         clipPath: MOBILE_MENU_OPEN_CLIP_PATH,
-        transition: { duration: duration.layout, ease: ease.layout },
+        transition: {
+          duration: duration.mobileMenuClipOpen,
+          ease: ease.layout,
+        },
       }}
       exit={{
         clipPath: MOBILE_MENU_CLOSED_CLIP_PATH,
-        transition: { duration: 0.4, ease: ease.overlayExit },
+        transition: {
+          duration: duration.mobileMenuClipClose,
+          ease: ease.overlayExit,
+        },
       }}
     >
       <div className="h-[64px] shrink-0" />
@@ -392,17 +441,17 @@ function MobileMenu({
               animate={{
                 y: '0%',
                 transition: {
-                  duration: 0.5,
+                  duration: 0.65,
                   ease: ease.out,
-                  delay: 0.15 + index * 0.05,
+                  delay: 0.2 + index * 0.075,
                 },
               }}
               exit={{
                 y: '110%',
                 transition: {
-                  duration: 0.25,
+                  duration: 0.48,
                   ease: ease.in,
-                  delay: index * 0.025,
+                  delay: index * 0.05,
                 },
               }}
             >
@@ -431,12 +480,16 @@ function MobileMenu({
         animate={{
           opacity: 1,
           y: 0,
-          transition: { duration: 0.4, ease: ease.out, delay: 0.35 },
+          transition: {
+            duration: 0.5,
+            ease: ease.out,
+            delay: 0.58,
+          },
         }}
         exit={{
           opacity: 0,
-          y: 6,
-          transition: { duration: 0.15, ease: ease.in },
+          y: 8,
+          transition: { duration: 0.38, ease: ease.in, delay: 0.06 },
         }}
         className="flex shrink-0 items-center justify-between px-6 pb-8"
       >
@@ -490,6 +543,7 @@ export default function Nav() {
     activeSection,
     beginProgrammaticScroll,
     finishProgrammaticScroll,
+    forceSyncActiveSection,
     resetActiveSection,
     setActiveSection,
     syncActiveSection,
@@ -501,7 +555,7 @@ export default function Nav() {
     mobileOpen,
     lenisRef,
     menuRef,
-    syncActiveSection,
+    forceSyncActiveSection,
     setMobileOpen,
   )
 
@@ -588,23 +642,12 @@ export default function Nav() {
     ],
   )
 
+  const headerState = mobileOpen ? 'menu' : scrolled ? 'scrolled' : 'idle'
+
   return (
     <>
-      <header
-        className="fixed top-0 right-0 left-0 z-50 transition-all duration-300"
-        style={{
-          backgroundColor:
-            scrolled && !mobileOpen
-              ? 'color-mix(in oklch, var(--color-bg) 80%, transparent)'
-              : 'transparent',
-          backdropFilter: scrolled && !mobileOpen ? 'blur(12px)' : 'none',
-          borderBottom:
-            scrolled && !mobileOpen
-              ? '0.5px solid var(--color-border-sub)'
-              : '0.5px solid transparent',
-        }}
-      >
-        <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
+      <header className="site-header fixed top-0 right-0 left-0 z-50" data-state={headerState}>
+        <nav className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
           <Logo onClick={handleLogoClick} />
           <DesktopNavLinks
             activeSection={visibleActiveSection}

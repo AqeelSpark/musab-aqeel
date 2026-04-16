@@ -18,11 +18,16 @@ export default function Footer() {
           {SOCIAL_LINKS.map(({ label, href }, i) => (
             <div key={label} className="flex items-center">
               {i > 0 && (
-                <span
+                <svg
                   aria-hidden="true"
-                  className="mx-4 block h-3 w-px"
-                  style={{ backgroundColor: 'var(--color-accent-border)' }}
-                />
+                  className="mx-4 shrink-0"
+                  width="7"
+                  height="7"
+                  viewBox="-7 -7 14 14"
+                  style={{ fill: 'var(--color-text-primary)' }}
+                >
+                  <path d="M0,-6 L1.8,-1.8 L6,0 L1.8,1.8 L0,6 L-1.8,1.8 L-6,0 L-1.8,-1.8 Z" />
+                </svg>
               )}
               <a
                 href={href}

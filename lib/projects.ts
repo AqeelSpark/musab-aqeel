@@ -62,7 +62,7 @@ export const projects: Project[] = [
       },
     ],
     liveUrl: 'https://meridian-platform.com',
-    repoUrl: '',
+    repoUrl: 'https://github.com/musabaqeel/meridian-platform',
   },
   {
     slug: 'aura-commerce',
@@ -120,7 +120,7 @@ export const projects: Project[] = [
       },
     ],
     liveUrl: 'https://aura-lifestyle.com',
-    repoUrl: '',
+    repoUrl: 'https://github.com/musabaqeel/aura-commerce',
   },
   {
     slug: 'nexus-dashboard',
@@ -177,7 +177,7 @@ export const projects: Project[] = [
       },
     ],
     liveUrl: 'https://nexus-analytics.io',
-    repoUrl: '',
+    repoUrl: 'https://github.com/musabaqeel/nexus-dashboard',
   },
   {
     slug: 'vertex-studio',
@@ -233,6 +233,6 @@ export const projects: Project[] = [
       },
     ],
     liveUrl: 'https://vertex-creative.com',
-    repoUrl: '',
+    repoUrl: 'https://github.com/musabaqeel/vertex-studio',
   },
 ]
