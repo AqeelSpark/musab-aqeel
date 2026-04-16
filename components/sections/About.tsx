@@ -44,7 +44,7 @@ function AboutTerminalBlock({ children }: { children: ReactNode }) {
   return (
     <div className="relative min-w-0">
       <div ref={scrollRef} className="overflow-x-auto">
-        <pre className="m-0 box-border inline-block min-w-full w-max max-w-none align-top p-5">
+        <pre className="m-0 box-border inline-block w-max max-w-none min-w-full p-5 align-top">
           {children}
         </pre>
       </div>
@@ -84,40 +84,39 @@ const CODE_BLOCK = `const engagement = {
 
 const DETAILS = [
   'Remote / Worldwide',
-  'Full stack — design to deployment',
+  'Full stack - design to deployment',
   'Response within 24 hours',
 ]
 
 export default function About() {
   return (
-    <section id="about" className="py-24 md:py-32 px-6 md:px-12 lg:px-24">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+    <section id="about" className="px-6 py-24 md:px-12 md:py-32 lg:px-24">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
         <div>
           <RevealText>
-            <span className="section-label block mb-4">
-              {'// 01 About'}
-            </span>
+            <span className="section-label mb-4 block">{'// 01 About'}</span>
           </RevealText>
 
           <SplitText
             as="h2"
-            className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight mb-8 font-display"
+            className="font-display mb-8 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
           >
             Built on systems. Delivered fast.
           </SplitText>
 
           <RevealText delay={0.05}>
             <p
-              className="text-lg leading-relaxed mb-10 max-w-[520px] font-body"
+              className="font-body mb-10 max-w-[520px] text-lg leading-relaxed"
               style={{
                 fontWeight: 300,
                 color: 'var(--color-text-secondary)',
               }}
             >
-              Close to a decade of building has produced something more useful than experience: systems.
-              Reusable architectures, hardened workflows, and an AI stack that compresses timelines
-              from months to weeks without touching quality. I take projects from zero to deployed,
-              across any stack, and I ship them fast.
+              Close to a decade of building has produced something more useful
+              than experience: systems. Reusable architectures, hardened
+              workflows, and an AI stack that compresses timelines from months
+              to weeks without touching quality. I take projects from zero to
+              deployed, across any stack, and I ship them fast.
             </p>
           </RevealText>
 
@@ -128,9 +127,15 @@ export default function About() {
                   className="flex items-center gap-3 py-3"
                   style={{ borderTop: '1px solid var(--color-border-sub)' }}
                 >
-                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }} aria-hidden="true">→</span>
                   <span
-                    className="text-sm font-body"
+                    className="text-xs"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+                  <span
+                    className="font-body text-sm"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
                     {detail}
@@ -143,7 +148,7 @@ export default function About() {
 
         <RevealText delay={0.15}>
           <div
-            className="rounded-[4px] overflow-hidden"
+            className="overflow-hidden rounded-[4px]"
             style={{
               backgroundColor: 'var(--color-surface-up)',
               border: '1px solid var(--color-border)',
@@ -154,22 +159,39 @@ export default function About() {
               style={{ borderBottom: '1px solid var(--color-border-sub)' }}
               aria-hidden="true"
             >
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--color-border-up)' }} />
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--color-border-up)' }} />
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--color-border-up)' }} />
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: 'var(--color-border-up)' }}
+              />
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: 'var(--color-border-up)' }}
+              />
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: 'var(--color-border-up)' }}
+              />
             </div>
             <AboutTerminalBlock>
-              <code className="text-[13px] leading-[1.7] font-mono">
+              <code className="font-mono text-[13px] leading-[1.7]">
                 {CODE_BLOCK.split('\n').map((line, i) => (
                   <div key={i}>
                     {line.includes(':') ? (
                       <>
-                        <span style={{ color: 'var(--color-text-secondary)' }}>{line.split(':')[0]}</span>
-                        <span style={{ color: 'var(--color-text-tertiary)' }}>:</span>
-                        <span style={{ color: 'var(--color-text-primary)' }}>{line.split(':').slice(1).join(':')}</span>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>
+                          {line.split(':')[0]}
+                        </span>
+                        <span style={{ color: 'var(--color-text-tertiary)' }}>
+                          :
+                        </span>
+                        <span style={{ color: 'var(--color-text-primary)' }}>
+                          {line.split(':').slice(1).join(':')}
+                        </span>
                       </>
                     ) : (
-                      <span style={{ color: 'var(--color-text-secondary)' }}>{line}</span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>
+                        {line}
+                      </span>
                     )}
                   </div>
                 ))}

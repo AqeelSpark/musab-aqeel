@@ -15,18 +15,16 @@ export default function Work() {
   if (!featured) return null
 
   return (
-    <section id="work" className="py-24 md:py-32 px-6 md:px-12 lg:px-24">
-      <div className="max-w-[1400px] mx-auto">
-        <div className="flex items-end justify-between mb-12">
+    <section id="work" className="px-6 py-24 md:px-12 md:py-32 lg:px-24">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="mb-12 flex items-end justify-between">
           <div>
             <RevealText>
-              <span className="section-label block mb-4">
-                {'// 02 Work'}
-              </span>
+              <span className="section-label mb-4 block">{'// 02 Work'}</span>
             </RevealText>
             <SplitText
               as="h2"
-              className="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight font-display"
+              className="font-display text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
             >
               Selected projects
             </SplitText>
@@ -34,7 +32,7 @@ export default function Work() {
           <RevealText delay={0.1}>
             <Link
               href="/work"
-              className="hidden md:flex items-center gap-2 text-sm font-body"
+              className="font-body hidden items-center gap-2 text-sm md:flex"
               style={{ color: 'var(--color-text-secondary)' }}
             >
               View all <span aria-hidden="true">→</span>
@@ -42,23 +40,20 @@ export default function Work() {
           </RevealText>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <RevealText className="md:col-span-2" delay={0.05}>
             <ProjectCard project={featured} />
           </RevealText>
 
           {rest.map((project, i) => (
-            <RevealText
-              key={project.slug}
-              delay={0.1 + i * 0.06}
-            >
+            <RevealText key={project.slug} delay={0.1 + i * 0.06}>
               <ProjectCard project={project} />
             </RevealText>
           ))}
         </div>
 
         {/* Mobile-only bottom button */}
-        <RevealText delay={0.2} className="md:hidden mt-8">
+        <RevealText delay={0.2} className="mt-8 md:hidden">
           <Link href="/work" className="btn-outline w-full text-center">
             View all projects
           </Link>

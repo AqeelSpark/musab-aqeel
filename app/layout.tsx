@@ -1,18 +1,40 @@
 import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
 import SmoothScroll from '@/lib/SmoothScroll'
 import Nav from '@/components/layout/Nav'
+import MainWrapper from '@/components/layout/MainWrapper'
+import Loader from '@/components/ui/Loader'
 import CustomCursor from '@/components/ui/CustomCursor'
+import { LoaderProvider } from '@/lib/LoaderContext'
 import { personJsonLd, websiteJsonLd } from '@/lib/structured-data'
-import { SITE_URL } from '@/lib/config'
+import {
+  SITE_NAME,
+  SITE_SHORT_TITLE,
+  SITE_TITLE,
+  SITE_URL,
+  TWITTER_HANDLE,
+} from '@/lib/config'
 import './globals.css'
 
 const clashDisplay = localFont({
   src: [
-    { path: '../public/fonts/ClashDisplay/ClashDisplay-Regular.woff2', weight: '400' },
-    { path: '../public/fonts/ClashDisplay/ClashDisplay-Medium.woff2', weight: '500' },
-    { path: '../public/fonts/ClashDisplay/ClashDisplay-Semibold.woff2', weight: '600' },
-    { path: '../public/fonts/ClashDisplay/ClashDisplay-Bold.woff2', weight: '700' },
+    {
+      path: '../public/fonts/ClashDisplay/ClashDisplay-Regular.woff2',
+      weight: '400',
+    },
+    {
+      path: '../public/fonts/ClashDisplay/ClashDisplay-Medium.woff2',
+      weight: '500',
+    },
+    {
+      path: '../public/fonts/ClashDisplay/ClashDisplay-Semibold.woff2',
+      weight: '600',
+    },
+    {
+      path: '../public/fonts/ClashDisplay/ClashDisplay-Bold.woff2',
+      weight: '700',
+    },
   ],
   variable: '--font-display',
   display: 'swap',
@@ -31,7 +53,10 @@ const satoshi = localFont({
 
 const fragmentMono = localFont({
   src: [
-    { path: '../public/fonts/FragmentMono/FragmentMono-Regular.woff2', weight: '400' },
+    {
+      path: '../public/fonts/FragmentMono/FragmentMono-Regular.woff2',
+      weight: '400',
+    },
   ],
   variable: '--font-mono',
   display: 'swap',
@@ -40,20 +65,35 @@ const fragmentMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Musab Aqeel - Full Stack Developer, Architect & Operator',
-    template: '%s | Musab Aqeel',
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'Full stack developer and studio founder delivering complete builds from design to deployment in weeks, not months. Based in Pakistan, working worldwide.',
+  description:
+    'Full stack developer and studio founder delivering complete builds from design to deployment in weeks, not months. Based in Pakistan, working worldwide.',
   keywords: [
-    'full stack developer', 'web developer', 'freelance developer', 'Next.js developer',
-    'React developer', 'TypeScript', 'Node.js', 'Pakistan developer', 'remote developer',
-    'studio founder', 'Dupixo', 'web application', 'e-commerce developer', 'SaaS developer',
-    'UI engineer', 'design to deployment', 'fast delivery', 'Musab Aqeel',
+    'full stack developer',
+    'web developer',
+    'freelance developer',
+    'Next.js developer',
+    'React developer',
+    'TypeScript',
+    'Node.js',
+    'Pakistan developer',
+    'remote developer',
+    'studio founder',
+    'Dupixo',
+    'web application',
+    'e-commerce developer',
+    'SaaS developer',
+    'UI engineer',
+    'design to deployment',
+    'fast delivery',
+    'Musab Aqeel',
   ],
-  applicationName: 'Musab Aqeel',
-  authors: [{ name: 'Musab Aqeel', url: SITE_URL }],
-  creator: 'Musab Aqeel',
-  publisher: 'Musab Aqeel',
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   category: 'Technology',
   alternates: {
     canonical: '/',
@@ -62,16 +102,18 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: SITE_URL,
-    siteName: 'Musab Aqeel',
-    title: 'Musab Aqeel - Full Stack Developer, Architect & Operator',
-    description: 'I take complete projects from zero to production, across any stack, at a pace most teams cannot match.',
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description:
+      'I take complete projects from zero to production, across any stack, at a pace most teams cannot match.',
     images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Musab Aqeel - Full Stack Developer',
-    description: 'Complete builds from design to deployment in weeks, not months.',
-    creator: '@aqeelmusab',
+    title: SITE_SHORT_TITLE,
+    description:
+      'Complete builds from design to deployment in weeks, not months.',
+    creator: TWITTER_HANDLE,
     images: ['/twitter-image'],
   },
   robots: {
@@ -106,7 +148,7 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: ReactNode
 }>) {
   return (
     <html
@@ -124,12 +166,17 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <SmoothScroll>
-          <Nav />
-          {children}
-        </SmoothScroll>
-        <CustomCursor />
-        <div className="noise" aria-hidden="true" />
+        <LoaderProvider>
+          <Loader />
+          <SmoothScroll>
+            <MainWrapper>
+              <Nav />
+              {children}
+            </MainWrapper>
+          </SmoothScroll>
+          <CustomCursor />
+          <div className="noise" aria-hidden="true" />
+        </LoaderProvider>
       </body>
     </html>
   )

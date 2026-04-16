@@ -1,11 +1,45 @@
 import { NextResponse } from 'next/server'
+import { FAVICON_96_URL, SITE_DOMAIN } from '@/lib/config'
+import type { ContactPayload } from '@/types'
 
-interface ContactPayload {
-  name: string
-  email: string
-  budget: string
-  projectType: string
-  message: string
+type ParseContactPayloadResult =
+  | { success: true; data: ContactPayload }
+  | { success: false; error: string }
+
+type WebhookPayload =
+  | ReturnType<typeof buildDiscordPayload>
+  | ReturnType<typeof buildSlackPayload>
+  | ReturnType<typeof buildGenericPayload>
+
+function normalizeField(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  return value.trim()
+}
+
+function parseContactPayload(value: unknown): ParseContactPayloadResult {
+  if (!value || typeof value !== 'object') {
+    return { success: false, error: 'Invalid request body' }
+  }
+
+  const body = value as Record<string, unknown>
+  const name = normalizeField(body.name)
+  const email = normalizeField(body.email)
+  const message = normalizeField(body.message)
+
+  if (!name || !email || !message) {
+    return { success: false, error: 'Missing required fields' }
+  }
+
+  return {
+    success: true,
+    data: {
+      name,
+      email,
+      budget: normalizeField(body.budget) ?? '',
+      projectType: normalizeField(body.projectType) ?? '',
+      message,
+    },
+  }
 }
 
 function isDiscordWebhook(url: string): boolean {
@@ -18,8 +52,8 @@ function isSlackWebhook(url: string): boolean {
 
 function buildDiscordPayload(body: ContactPayload) {
   return {
-    username: 'musabaqeel.com',
-    avatar_url: 'https://musabaqeel.com/favicons/favicon-96x96.png',
+    username: SITE_DOMAIN,
+    avatar_url: FAVICON_96_URL,
     embeds: [
       {
         author: {
@@ -31,17 +65,25 @@ function buildDiscordPayload(body: ContactPayload) {
           { name: '👤  Name', value: `\`${body.name}\``, inline: true },
           { name: '📧  Email', value: `\`${body.email}\``, inline: true },
           { name: '\u200b', value: '\u200b', inline: true },
-          { name: '💰  Budget', value: `\`${body.budget || 'Not specified'}\``, inline: true },
-          { name: '📁  Project Type', value: `\`${body.projectType || 'Not specified'}\``, inline: true },
+          {
+            name: '💰  Budget',
+            value: `\`${body.budget || 'Not specified'}\``,
+            inline: true,
+          },
+          {
+            name: '📁  Project Type',
+            value: `\`${body.projectType || 'Not specified'}\``,
+            inline: true,
+          },
           { name: '\u200b', value: '\u200b', inline: true },
           { name: '📝  Message', value: `>>> ${body.message}` },
         ],
         thumbnail: {
-          url: 'https://musabaqeel.com/favicons/favicon-96x96.png',
+          url: FAVICON_96_URL,
         },
         footer: {
-          text: 'musabaqeel.com  •  Contact Form',
-          icon_url: 'https://musabaqeel.com/favicons/favicon-96x96.png',
+          text: `${SITE_DOMAIN}  •  Contact Form`,
+          icon_url: FAVICON_96_URL,
         },
         timestamp: new Date().toISOString(),
       },
@@ -61,8 +103,14 @@ function buildSlackPayload(body: ContactPayload) {
         fields: [
           { type: 'mrkdwn', text: `*Name:*\n${body.name}` },
           { type: 'mrkdwn', text: `*Email:*\n${body.email}` },
-          { type: 'mrkdwn', text: `*Budget:*\n${body.budget || 'Not specified'}` },
-          { type: 'mrkdwn', text: `*Project Type:*\n${body.projectType || 'Not specified'}` },
+          {
+            type: 'mrkdwn',
+            text: `*Budget:*\n${body.budget || 'Not specified'}`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Project Type:*\n${body.projectType || 'Not specified'}`,
+          },
         ],
       },
       {
@@ -84,13 +132,42 @@ function buildGenericPayload(body: ContactPayload) {
   }
 }
 
+function buildWebhookPayload(
+  webhookUrl: string,
+  body: ContactPayload,
+): WebhookPayload {
+  if (isDiscordWebhook(webhookUrl)) {
+    return buildDiscordPayload(body)
+  }
+
+  if (isSlackWebhook(webhookUrl)) {
+    return buildSlackPayload(body)
+  }
+
+  return buildGenericPayload(body)
+}
+
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as ContactPayload
-
-    if (!body.name || !body.email || !body.message) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
+    let rawBody: unknown
+    try {
+      rawBody = await request.json()
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON body' },
+        { status: 400 },
+      )
     }
+
+    const parsedBody = parseContactPayload(rawBody)
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { success: false, error: parsedBody.error },
+        { status: 400 },
+      )
+    }
+
+    const body = parsedBody.data
 
     const webhookUrl = process.env.CONTACT_WEBHOOK_URL
     if (!webhookUrl) {
@@ -98,30 +175,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true })
     }
 
-    let payload: unknown
-    if (isDiscordWebhook(webhookUrl)) {
-      payload = buildDiscordPayload(body)
-    } else if (isSlackWebhook(webhookUrl)) {
-      payload = buildSlackPayload(body)
-    } else {
-      payload = buildGenericPayload(body)
-    }
-
     const webhookRes = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(buildWebhookPayload(webhookUrl, body)),
     })
 
     if (!webhookRes.ok) {
       const errText = await webhookRes.text().catch(() => 'Unknown error')
       console.error(`Webhook failed (${webhookRes.status}): ${errText}`)
-      return NextResponse.json({ success: false, error: 'Webhook delivery failed' }, { status: 502 })
+      return NextResponse.json(
+        { success: false, error: 'Webhook delivery failed' },
+        { status: 502 },
+      )
     }
 
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Contact route error:', err)
-    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })
+    return NextResponse.json(
+      { success: false, error: 'Internal error' },
+      { status: 500 },
+    )
   }
 }

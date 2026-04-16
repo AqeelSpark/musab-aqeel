@@ -1,28 +1,41 @@
-import { SITE_URL } from '@/lib/config'
+import {
+  COMPANY_NAME,
+  JOB_TITLE,
+  SITE_DOMAIN,
+  SITE_NAME,
+  SITE_URL,
+  SOCIAL_LINKS,
+} from '@/lib/config'
+import type { Project } from '@/types'
 
 export const personJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
-  name: 'Musab Aqeel',
+  name: SITE_NAME,
   url: SITE_URL,
-  jobTitle: 'Full Stack Developer',
-  description: 'Full stack developer and studio founder delivering complete builds from design to deployment in weeks.',
+  jobTitle: JOB_TITLE,
+  description:
+    'Full stack developer and studio founder delivering complete builds from design to deployment in weeks.',
   knowsAbout: [
-    'Web Development', 'Full Stack Development', 'React', 'Next.js', 'TypeScript',
-    'Node.js', 'PostgreSQL', 'E-commerce', 'UI Engineering', 'System Architecture',
+    'Web Development',
+    'Full Stack Development',
+    'React',
+    'Next.js',
+    'TypeScript',
+    'Node.js',
+    'PostgreSQL',
+    'E-commerce',
+    'UI Engineering',
+    'System Architecture',
   ],
-  sameAs: [
-    'https://github.com/aqeelspark',
-    'https://linkedin.com/in/aqeelmusab',
-    'https://x.com/aqeelmusab',
-  ],
+  sameAs: SOCIAL_LINKS.map(({ href }) => href),
   address: {
     '@type': 'PostalAddress',
     addressCountry: 'PK',
   },
   worksFor: {
     '@type': 'Organization',
-    name: 'Dupixo',
+    name: COMPANY_NAME,
     url: SITE_URL,
   },
 }
@@ -30,24 +43,22 @@ export const personJsonLd = {
 export const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Musab Aqeel',
-  alternateName: ['Musab Aqeel', 'musabaqeel.com'],
+  name: SITE_NAME,
+  alternateName: [SITE_NAME, SITE_DOMAIN],
   url: SITE_URL,
-  description: 'Portfolio of Musab Aqeel — full stack developer, architect, and operator.',
+  description: `Portfolio of ${SITE_NAME} - full stack developer, architect, and operator.`,
   author: {
     '@type': 'Person',
-    name: 'Musab Aqeel',
+    name: SITE_NAME,
   },
 }
 
-export function projectJsonLd(project: {
-  title: string
-  summary: string
-  coverImage: string
-  tags: string[]
-  year: string
-  slug: string
-}) {
+export function projectJsonLd(
+  project: Pick<
+    Project,
+    'title' | 'summary' | 'coverImage' | 'tags' | 'year' | 'slug'
+  >,
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
@@ -59,7 +70,7 @@ export function projectJsonLd(project: {
     keywords: project.tags.join(', '),
     creator: {
       '@type': 'Person',
-      name: 'Musab Aqeel',
+      name: SITE_NAME,
     },
   }
 }

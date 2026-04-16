@@ -5,22 +5,26 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import SplitText from '@/components/ui/SplitText'
 import MagneticButton from '@/components/ui/MagneticButton'
-import { ease, duration } from '@/lib/motion'
-
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 12 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: duration.base, ease: ease.out, delay },
-  },
-})
+import { useLoader } from '@/lib/LoaderContext'
+import { duration, ease, scroll } from '@/lib/motion'
 
 export default function Hero() {
   const scrollLineRef = useRef<HTMLDivElement>(null)
+  const { isReadyToAnimate } = useLoader()
+
+  const fadeUp = (delay: number) => ({
+    initial: { opacity: 0, y: 12 } as const,
+    animate: isReadyToAnimate
+      ? {
+          opacity: 1,
+          y: 0,
+          transition: { duration: duration.base, ease: ease.out, delay },
+        }
+      : { opacity: 0, y: 12 },
+  })
 
   useEffect(() => {
-    if (!scrollLineRef.current) return
+    if (!scrollLineRef.current || !isReadyToAnimate) return
     const tl = gsap.to(scrollLineRef.current, {
       scaleY: 1,
       duration: 1.2,
@@ -28,35 +32,41 @@ export default function Hero() {
       repeat: -1,
       yoyo: true,
     })
-    return () => { tl.kill() }
-  }, [])
+    return () => {
+      tl.kill()
+    }
+  }, [isReadyToAnimate])
 
   function scrollToSection(href: string) {
     const el = document.querySelector(href)
     if (el) {
-      const offset = 80
-      const y = el.getBoundingClientRect().top + window.scrollY - offset
+      const y =
+        el.getBoundingClientRect().top + window.scrollY - scroll.headerOffset
       window.scrollTo({ top: y, behavior: 'smooth' })
     }
   }
 
   return (
-    <section aria-label="Introduction" className="hero relative flex flex-col px-6 md:px-12 lg:px-24 pt-28 md:pt-32 pb-16 md:pb-24 overflow-hidden">
+    <section
+      aria-label="Introduction"
+      className="hero relative flex flex-col overflow-hidden px-6 pt-28 pb-16 md:px-12 md:pt-32 md:pb-24 lg:px-24"
+    >
       <div
-        className="absolute top-1/3 right-1/4 w-[800px] h-[800px] rounded-full pointer-events-none"
+        className="pointer-events-none absolute top-1/3 right-1/4 h-[800px] w-[800px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)',
+          background:
+            'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)',
           opacity: 0.03,
         }}
         aria-hidden="true"
       />
 
       {/* Headline block */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center max-w-[1200px]">
+      <div className="relative z-10 flex max-w-[1200px] flex-1 flex-col justify-center">
         <div className="mb-4 md:mb-6">
           <SplitText
             as="h1"
-            className="font-semibold tracking-tight font-display"
+            className="font-display font-semibold tracking-tight"
             style={{ fontSize: 'var(--text-hero)', lineHeight: 1.05 }}
             trigger="load"
             delay={0.1}
@@ -65,7 +75,7 @@ export default function Hero() {
           </SplitText>
           <SplitText
             as="h2"
-            className="font-semibold tracking-tight font-display"
+            className="font-display font-semibold tracking-tight"
             style={{
               fontSize: 'var(--text-hero)',
               lineHeight: 1.05,
@@ -80,19 +90,19 @@ export default function Hero() {
 
         <motion.p
           {...fadeUp(0.35)}
-          className="max-w-[600px] text-base md:text-lg leading-relaxed mb-8 md:mb-12 font-body"
+          className="font-body mb-8 max-w-[600px] text-base leading-relaxed md:mb-12 md:text-lg"
           style={{
             fontWeight: 300,
             color: 'var(--color-text-secondary)',
           }}
         >
-          I take complete projects from zero to production, across any stack,
-          at a pace most teams cannot match.
+          I take complete projects from zero to production, across any stack, at
+          a pace most teams cannot match.
         </motion.p>
 
         <motion.div {...fadeUp(0.5)} className="flex items-center gap-5">
           <MagneticButton
-            className="btn-outline md:text-base md:px-8 md:py-3.5"
+            className="btn-outline md:px-8 md:py-3.5 md:text-base"
             onClick={() => scrollToSection('#contact')}
           >
             Start a project
@@ -101,16 +111,19 @@ export default function Hero() {
             className="btn-text md:text-base"
             onClick={() => scrollToSection('#work')}
           >
-            View work <span className="arrow" aria-hidden="true">→</span>
+            View work{' '}
+            <span className="arrow" aria-hidden="true">
+              →
+            </span>
           </MagneticButton>
         </motion.div>
       </div>
 
-      {/* Bottom bar — social proof left, scroll indicator right */}
+      {/* Bottom bar - social proof left, scroll indicator right */}
       <div className="relative z-10 flex items-end justify-between">
         <motion.p
           {...fadeUp(0.7)}
-          className="text-[10px] md:text-xs uppercase tracking-widest font-mono"
+          className="font-mono text-[10px] tracking-widest uppercase md:text-xs"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
           Trusted by 25+ clients worldwide
@@ -118,11 +131,11 @@ export default function Hero() {
 
         <motion.div
           {...fadeUp(0.85)}
-          className="flex flex-col items-center gap-2 flex-shrink-0 ml-4"
+          className="ml-4 flex shrink-0 flex-col items-center gap-2"
           aria-hidden="true"
         >
           <span
-            className="text-[9px] md:text-[10px] uppercase tracking-widest font-mono"
+            className="font-mono text-[9px] tracking-widest uppercase md:text-[10px]"
             style={{
               color: 'var(--color-text-tertiary)',
               writingMode: 'vertical-rl',
@@ -131,7 +144,7 @@ export default function Hero() {
             scroll
           </span>
           <div
-            className="w-px h-6 md:h-8 origin-top"
+            className="h-6 w-px origin-top md:h-8"
             ref={scrollLineRef}
             style={{
               backgroundColor: 'var(--color-border-up)',

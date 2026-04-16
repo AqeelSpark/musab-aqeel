@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef, type MouseEvent } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
+import { gsap } from 'gsap'
 import Tag from '@/components/ui/Tag'
+import { duration, ease } from '@/lib/motion'
 import type { Project } from '@/types'
 
 interface ProjectCardProps {
@@ -12,19 +15,75 @@ interface ProjectCardProps {
   className?: string
 }
 
-export default function ProjectCard({ project, className = '' }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  className = '',
+}: ProjectCardProps) {
   const [loaded, setLoaded] = useState(false)
+  const router = useRouter()
+  const transitioning = useRef(false)
+
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault()
+      if (transitioning.current) return
+      transitioning.current = true
+
+      const linkEl = e.currentTarget as HTMLElement
+      const card = linkEl.querySelector('.card-wrapper') as HTMLElement | null
+
+      if (!card) {
+        router.push(`/work/${project.slug}`)
+        return
+      }
+
+      const section =
+        card.closest('section') ??
+        card.closest('[class*="max-w"]')?.parentElement
+      if (section) {
+        const allCards = Array.from(section.querySelectorAll('.card-wrapper'))
+        const others = allCards.filter((el) => el !== card)
+        gsap.to(others, {
+          opacity: 0,
+          y: 12,
+          duration: 0.3,
+          ease: 'power2.in',
+          stagger: 0.03,
+        })
+
+        const chrome = Array.from(
+          section.querySelectorAll(
+            '[class*="section-label"], h2, [class*="btn-"], a[href="/work"]',
+          ),
+        )
+        gsap.to(chrome, { opacity: 0, duration: 0.25, ease: 'power2.in' })
+      }
+
+      const meta = card.querySelector('.card-meta')
+      if (meta) {
+        gsap.to(meta, { opacity: 0, y: 8, duration: 0.2, ease: 'power2.in' })
+      }
+
+      setTimeout(() => {
+        router.push(`/work/${project.slug}`)
+      }, 350)
+    },
+    [project.slug, router],
+  )
 
   return (
-    <Link href={`/work/${project.slug}`} className={`group block ${className}`}>
+    <Link
+      href={`/work/${project.slug}`}
+      className={`group block ${className}`}
+      onClick={handleClick}
+    >
       <div className="card-wrapper" data-cursor="project">
         <motion.div
           layoutId={`project-image-${project.slug}`}
-          className="relative aspect-[16/10] overflow-hidden rounded-[2px]"
+          className="relative aspect-16/10 overflow-hidden rounded-[2px]"
           style={{ backgroundColor: 'var(--color-surface)' }}
           transition={{
-            duration: 0.5,
-            ease: [0.16, 1, 0.3, 1],
+            layout: { duration: duration.layout, ease: ease.layout },
           }}
         >
           {!loaded && <ImageSkeleton />}
@@ -39,27 +98,26 @@ export default function ProjectCard({ project, className = '' }: ProjectCardProp
           <div
             className="absolute inset-0 transition-opacity duration-500 group-hover:opacity-60"
             style={{
-              background: 'linear-gradient(to top, var(--color-bg), transparent 60%)',
+              background:
+                'linear-gradient(to top, var(--color-bg), transparent 60%)',
               opacity: 0.7,
             }}
           />
         </motion.div>
 
-        <div className="flex items-start justify-between mt-4">
+        <div className="card-meta mt-4 flex items-start justify-between">
           <div>
-            <h3
-              className="text-lg md:text-xl font-medium tracking-tight font-display"
-            >
+            <h3 className="font-display text-lg font-medium tracking-tight md:text-xl">
               {project.title}
             </h3>
             <p
-              className="text-xs mt-1 font-body"
+              className="font-body mt-1 text-xs"
               style={{ color: 'var(--color-text-tertiary)' }}
             >
               {project.client} / {project.type}
             </p>
           </div>
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
             {project.tags.slice(0, 3).map((tag) => (
               <Tag key={tag}>{tag}</Tag>
             ))}
@@ -71,7 +129,5 @@ export default function ProjectCard({ project, className = '' }: ProjectCardProp
 }
 
 function ImageSkeleton() {
-  return (
-    <div className="absolute inset-0 skeleton-shimmer" />
-  )
+  return <div className="skeleton-shimmer absolute inset-0" />
 }

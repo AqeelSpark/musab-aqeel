@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
 
 interface MagneticButtonProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   as?: 'button' | 'a'
   type?: 'button' | 'submit' | 'reset'
@@ -31,7 +31,7 @@ export default function MagneticButton({
   const springX = useSpring(x, { stiffness: 300, damping: 20 })
   const springY = useSpring(y, { stiffness: 300, damping: 20 })
 
-  function handleMouseMove(e: React.MouseEvent) {
+  function handleMouseMove(e: MouseEvent) {
     if (!ref.current) return
     const rect = ref.current.getBoundingClientRect()
     const centerX = rect.left + rect.width / 2

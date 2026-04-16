@@ -1,21 +1,17 @@
-const SOCIAL_LINKS = [
-  { label: 'GitHub', href: 'https://github.com/aqeelspark' },
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/aqeelmusab' },
-  { label: 'X / Twitter', href: 'https://x.com/aqeelmusab' },
-]
+import { SITE_NAME, SOCIAL_LINKS } from '@/lib/config'
 
 export default function Footer() {
   return (
     <footer
-      className="py-8 px-6 md:px-12 lg:px-24"
+      className="px-6 py-8 md:px-12 lg:px-24"
       style={{ borderTop: '1px solid var(--color-border-sub)' }}
     >
-      <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 md:flex-row">
         <p
-          className="text-xs font-mono"
+          className="font-mono text-xs"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
-          &copy; {new Date().getFullYear()} Musab Aqeel. All rights reserved.
+          &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
         </p>
 
         <div className="flex items-center">
@@ -24,7 +20,7 @@ export default function Footer() {
               {i > 0 && (
                 <span
                   aria-hidden="true"
-                  className="w-px h-3 mx-4 block"
+                  className="mx-4 block h-3 w-px"
                   style={{ backgroundColor: 'var(--color-accent-border)' }}
                 />
               )}
@@ -32,7 +28,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-mono transition-colors duration-200 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
+                className="font-mono text-xs text-(--color-text-tertiary) transition-colors duration-200 hover:text-(--color-text-primary)"
               >
                 {label}
               </a>

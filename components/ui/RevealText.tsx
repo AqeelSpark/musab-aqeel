@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useScrollTriggerCleanup } from '@/components/ui/useScrollTriggerCleanup'
+import { useLoader } from '@/lib/LoaderContext'
+import { scroll } from '@/lib/motion'
 
 interface RevealTextProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   delay?: number
   scrub?: boolean
@@ -18,20 +20,12 @@ export default function RevealText({
   scrub = true,
 }: RevealTextProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const stRef = useRef<ScrollTrigger | null>(null)
-
-  const cleanup = useCallback(() => {
-    if (stRef.current) {
-      stRef.current.kill()
-      stRef.current = null
-    }
-  }, [])
+  const { isReadyToAnimate } = useLoader()
+  const { cleanup, scrollTriggerRef } = useScrollTriggerCleanup()
 
   useEffect(() => {
-    if (!ref.current) return
+    if (!ref.current || !isReadyToAnimate) return
 
-    // gsap.set confirms the initial state already applied by the [data-reveal] CSS rule,
-    // ensuring GSAP owns the property from the start with no specificity conflict.
     gsap.set(ref.current, { opacity: 0, y: 30 })
 
     const tween = gsap.to(ref.current, {
@@ -39,22 +33,21 @@ export default function RevealText({
       y: 0,
       duration: scrub ? 1 : 0.7,
       ease: scrub ? 'none' : 'power3.out',
-      // delay on a scrubbed tween creates a dead zone — only meaningful for once-mode
       delay: scrub ? 0 : delay,
       scrollTrigger: {
         trigger: ref.current,
-        start: 'top 95%',
-        end: 'top 65%',
+        start: scroll.revealStart,
+        end: scroll.revealEnd,
         scrub: scrub ? 0.3 : false,
         once: !scrub,
         invalidateOnRefresh: true,
       },
     })
 
-    stRef.current = tween.scrollTrigger ?? null
+    scrollTriggerRef.current = tween.scrollTrigger ?? null
 
     return cleanup
-  }, [delay, scrub, cleanup])
+  }, [delay, scrub, cleanup, isReadyToAnimate, scrollTriggerRef])
 
   return (
     <div ref={ref} data-reveal className={className}>

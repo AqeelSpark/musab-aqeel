@@ -1,19 +1,21 @@
 export const ease = {
-  out:    [0.16, 1, 0.3, 1] as const,
-  in:     [0.7, 0, 0.84, 0] as const,
-  inOut:  [0.87, 0, 0.13, 1] as const,
-  smooth: [0.25, 0.46, 0.45, 0.94] as const,
+  out: [0.16, 1, 0.3, 1] as const,
+  in: [0.7, 0, 0.84, 0] as const,
+  layout: [0.32, 0.72, 0, 1] as const,
+  overlayExit: [0.5, 0, 0.75, 0] as const,
 }
 
 export const duration = {
-  fast:  0.3,
-  base:  0.55,
-  slow:  0.85,
-  xslow: 1.2,
+  base: 0.55,
+  layout: 0.6,
 }
 
 export const stagger = {
   tight: 0.04,
-  base:  0.07,
-  loose: 0.12,
+}
+
+export const scroll = {
+  headerOffset: 80,
+  revealStart: 'top 95%',
+  revealEnd: 'top 65%',
 }

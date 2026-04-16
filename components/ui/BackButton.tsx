@@ -17,7 +17,7 @@ export default function BackButton() {
     <button
       type="button"
       onClick={handleBack}
-      className="inline-flex items-center gap-2 text-sm mb-8 font-body"
+      className="font-body mb-8 inline-flex items-center gap-2 text-sm"
       style={{ color: 'var(--color-text-secondary)' }}
     >
       ← Back

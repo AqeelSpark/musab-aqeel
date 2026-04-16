@@ -6,7 +6,7 @@ import { motion } from 'motion/react'
 import RevealText from '@/components/ui/RevealText'
 import Tag from '@/components/ui/Tag'
 import ProjectCard from '@/components/work/ProjectCard'
-import { ease } from '@/lib/motion'
+import { duration, ease } from '@/lib/motion'
 import { projects } from '@/lib/projects'
 import type { Project } from '@/types'
 
@@ -15,7 +15,9 @@ interface CaseStudyProps {
 }
 
 export default function CaseStudy({ project }: CaseStudyProps) {
-  const otherProjects = projects.filter(p => p.slug !== project.slug).slice(0, 2)
+  const otherProjects = projects
+    .filter((p) => p.slug !== project.slug)
+    .slice(0, 2)
   const [heroLoaded, setHeroLoaded] = useState(false)
 
   return (
@@ -23,14 +25,13 @@ export default function CaseStudy({ project }: CaseStudyProps) {
       {/* Hero image */}
       <motion.div
         layoutId={`project-image-${project.slug}`}
-        className="relative w-full aspect-[16/8] overflow-hidden"
+        className="relative aspect-16/8 w-full overflow-hidden"
         style={{ backgroundColor: 'var(--color-surface)' }}
         transition={{
-          duration: 0.5,
-          ease: [0.16, 1, 0.3, 1],
+          layout: { duration: duration.layout, ease: ease.layout },
         }}
       >
-        {!heroLoaded && <div className="absolute inset-0 skeleton-shimmer" />}
+        {!heroLoaded && <div className="skeleton-shimmer absolute inset-0" />}
         <Image
           src={project.coverImage}
           alt={project.title}
@@ -43,21 +44,28 @@ export default function CaseStudy({ project }: CaseStudyProps) {
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(to top, var(--color-bg) 0%, transparent 50%)',
+            background:
+              'linear-gradient(to top, var(--color-bg) 0%, transparent 50%)',
           }}
         />
         <div className="absolute bottom-8 left-6 md:left-12 lg:left-24">
-          <p
-            className="text-xs mb-2 font-mono"
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: ease.out, delay: 0.3 }}
+            className="mb-2 font-mono text-xs"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {project.type} / {project.year}
-          </p>
-          <h1
-            className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight font-display"
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: ease.out, delay: 0.35 }}
+            className="font-display text-3xl font-semibold tracking-tight md:text-5xl lg:text-6xl"
           >
             {project.title}
-          </h1>
+          </motion.h1>
         </div>
       </motion.div>
 
@@ -65,14 +73,14 @@ export default function CaseStudy({ project }: CaseStudyProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: ease.out, delay: 0.3 }}
+        transition={{ duration: 0.6, ease: ease.out, delay: 0.45 }}
       >
         {/* Overview */}
-        <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-          <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+          <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <p
-                className="text-xl leading-relaxed font-body"
+                className="font-body text-xl leading-relaxed"
                 style={{
                   fontWeight: 300,
                   color: 'var(--color-text-secondary)',
@@ -87,13 +95,15 @@ export default function CaseStudy({ project }: CaseStudyProps) {
               <MetaRow label="Role" value="Full Stack Development" />
               <div>
                 <span
-                  className="text-xs uppercase tracking-widest block mb-2 font-mono"
+                  className="mb-2 block font-mono text-xs tracking-widest uppercase"
                   style={{ color: 'var(--color-text-tertiary)' }}
                 >
                   Stack
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {project.tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
+                  {project.tags.map((tag) => (
+                    <Tag key={tag}>{tag}</Tag>
+                  ))}
                 </div>
               </div>
               {project.liveUrl && (
@@ -101,7 +111,7 @@ export default function CaseStudy({ project }: CaseStudyProps) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm inline-flex items-center gap-1.5 mt-2 font-body"
+                  className="font-body mt-2 inline-flex items-center gap-1.5 text-sm"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
                   View live ↗
@@ -120,19 +130,17 @@ export default function CaseStudy({ project }: CaseStudyProps) {
         <CaseSection label="Approach" content={project.approach} />
 
         {/* Key Decisions */}
-        <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-          <div className="max-w-[1400px] mx-auto">
-            <span className="section-label block mb-8">Key Decisions</span>
+        <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+          <div className="mx-auto max-w-[1400px]">
+            <span className="section-label mb-8 block">Key Decisions</span>
             <div className="flex flex-col gap-10">
               {project.decisions.map((d, i) => (
                 <RevealText key={i} delay={i * 0.08}>
-                  <h3
-                    className="text-xl md:text-2xl font-medium tracking-tight mb-3 font-display"
-                  >
+                  <h3 className="font-display mb-3 text-xl font-medium tracking-tight md:text-2xl">
                     {d.title}
                   </h3>
                   <p
-                    className="text-sm leading-relaxed max-w-[680px] font-body"
+                    className="font-body max-w-[680px] text-sm leading-relaxed"
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
                     {d.description}
@@ -144,21 +152,19 @@ export default function CaseStudy({ project }: CaseStudyProps) {
         </section>
 
         {/* Outcome */}
-        <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-          <div className="max-w-[1400px] mx-auto">
-            <span className="section-label block mb-8">Outcome</span>
+        <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+          <div className="mx-auto max-w-[1400px]">
+            <span className="section-label mb-8 block">Outcome</span>
             {project.outcomeMetrics && (
               <RevealText>
-                <div className="flex flex-wrap items-center gap-10 md:gap-16 mb-10">
+                <div className="mb-10 flex flex-wrap items-center gap-10 md:gap-16">
                   {project.outcomeMetrics.map((m, i) => (
                     <div key={i} className="flex flex-col">
-                      <span
-                        className="text-4xl md:text-5xl font-normal font-mono"
-                      >
+                      <span className="font-mono text-4xl font-normal md:text-5xl">
                         {m.value}
                       </span>
                       <span
-                        className="text-xs mt-1 font-body"
+                        className="font-body mt-1 text-xs"
                         style={{ color: 'var(--color-text-tertiary)' }}
                       >
                         {m.label}
@@ -170,7 +176,7 @@ export default function CaseStudy({ project }: CaseStudyProps) {
             )}
             <RevealText delay={0.1}>
               <p
-                className="text-base leading-relaxed max-w-[680px] font-body"
+                className="font-body max-w-[680px] text-base leading-relaxed"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
                 {project.outcome}
@@ -180,26 +186,24 @@ export default function CaseStudy({ project }: CaseStudyProps) {
         </section>
 
         {/* Stack Breakdown */}
-        <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-          <div className="max-w-[1400px] mx-auto">
-            <span className="section-label block mb-8">Stack Breakdown</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+          <div className="mx-auto max-w-[1400px]">
+            <span className="section-label mb-8 block">Stack Breakdown</span>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {project.stack.map((s, i) => (
                 <RevealText key={s.name} delay={i * 0.06}>
                   <div
-                    className="p-5 rounded-[2px]"
+                    className="rounded-[2px] p-5"
                     style={{
                       backgroundColor: 'var(--color-surface)',
                       border: '1px solid var(--color-border-sub)',
                     }}
                   >
-                    <h4
-                      className="text-base font-medium mb-2 font-display"
-                    >
+                    <h4 className="font-display mb-2 text-base font-medium">
                       {s.name}
                     </h4>
                     <p
-                      className="text-sm leading-relaxed font-body"
+                      className="font-body text-sm leading-relaxed"
                       style={{ color: 'var(--color-text-secondary)' }}
                     >
                       {s.reason}
@@ -214,11 +218,11 @@ export default function CaseStudy({ project }: CaseStudyProps) {
         <Divider />
 
         {/* More Work */}
-        <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-          <div className="max-w-[1400px] mx-auto">
-            <span className="section-label block mb-8">More work</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {otherProjects.map(p => (
+        <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+          <div className="mx-auto max-w-[1400px]">
+            <span className="section-label mb-8 block">More work</span>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {otherProjects.map((p) => (
                 <ProjectCard key={p.slug} project={p} />
               ))}
             </div>
@@ -233,13 +237,13 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <span
-        className="text-xs uppercase tracking-widest block mb-1 font-mono"
+        className="mb-1 block font-mono text-xs tracking-widest uppercase"
         style={{ color: 'var(--color-text-tertiary)' }}
       >
         {label}
       </span>
       <span
-        className="text-sm font-body"
+        className="font-body text-sm"
         style={{ color: 'var(--color-text-secondary)' }}
       >
         {value}
@@ -250,12 +254,12 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 
 function CaseSection({ label, content }: { label: string; content: string }) {
   return (
-    <section className="py-16 md:py-20 px-6 md:px-12 lg:px-24">
-      <div className="max-w-[1400px] mx-auto">
-        <span className="section-label block mb-8">{label}</span>
+    <section className="px-6 py-16 md:px-12 md:py-20 lg:px-24">
+      <div className="mx-auto max-w-[1400px]">
+        <span className="section-label mb-8 block">{label}</span>
         <RevealText>
           <p
-            className="text-base leading-relaxed max-w-[680px] font-body"
+            className="font-body max-w-[680px] text-base leading-relaxed"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {content}
@@ -269,7 +273,10 @@ function CaseSection({ label, content }: { label: string; content: string }) {
 function Divider() {
   return (
     <div className="px-6 md:px-12 lg:px-24">
-      <div className="max-w-[1400px] mx-auto h-px" style={{ backgroundColor: 'var(--color-border-sub)' }} />
+      <div
+        className="mx-auto h-px max-w-[1400px]"
+        style={{ backgroundColor: 'var(--color-border-sub)' }}
+      />
     </div>
   )
 }

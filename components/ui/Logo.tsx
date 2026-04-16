@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { gsap } from 'gsap'
@@ -12,10 +12,10 @@ import {
 } from '@/lib/logo-paths'
 
 interface LogoProps {
-  onClick?: (e: React.MouseEvent) => void
+  onClick?: (e: MouseEvent) => void
 }
 
-export default function Logo({ onClick: externalOnClick }: LogoProps = {}) {
+export default function Logo({ onClick: externalOnClick }: LogoProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const animatedRef = useRef(false)
 
@@ -25,7 +25,9 @@ export default function Logo({ onClick: externalOnClick }: LogoProps = {}) {
 
     const mPath = svgRef.current.querySelector('#logo-path-M') as SVGPathElement
     const aPath = svgRef.current.querySelector('#logo-path-A') as SVGPathElement
-    const markPath = svgRef.current.querySelector('#logo-mark') as SVGPathElement
+    const markPath = svgRef.current.querySelector(
+      '#logo-mark',
+    ) as SVGPathElement
 
     if (!mPath || !aPath || !markPath) return
 
@@ -46,53 +48,62 @@ export default function Logo({ onClick: externalOnClick }: LogoProps = {}) {
         },
       },
     })
-    .to([mPath, aPath, markPath], {
-      duration: 0.05,
-      ease: 'none',
-      attr: {
-        d: (_: number, el: SVGPathElement) => {
-          if (el.id === 'logo-path-M') return logoGlitchState3.M
-          if (el.id === 'logo-path-A') return logoGlitchState3.A
-          return logoGlitchState3.mark
+      .to([mPath, aPath, markPath], {
+        duration: 0.05,
+        ease: 'none',
+        attr: {
+          d: (_: number, el: SVGPathElement) => {
+            if (el.id === 'logo-path-M') return logoGlitchState3.M
+            if (el.id === 'logo-path-A') return logoGlitchState3.A
+            return logoGlitchState3.mark
+          },
         },
-      },
-    })
-    .to([mPath, aPath, markPath], {
-      duration: 0.85,
-      ease: 'power3.out',
-      attr: {
-        d: (_: number, el: SVGPathElement) => {
-          if (el.id === 'logo-path-M') return logoFinalState.M
-          if (el.id === 'logo-path-A') return logoFinalState.A
-          return logoFinalState.mark
+      })
+      .to([mPath, aPath, markPath], {
+        duration: 0.85,
+        ease: 'power3.out',
+        attr: {
+          d: (_: number, el: SVGPathElement) => {
+            if (el.id === 'logo-path-M') return logoFinalState.M
+            if (el.id === 'logo-path-A') return logoFinalState.A
+            return logoFinalState.mark
+          },
         },
-      },
-    })
-    .to(markPath, {
-      scale: 1.04,
-      transformOrigin: 'center center',
-      duration: 2,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-    }, '-=0.2')
+      })
+      .to(
+        markPath,
+        {
+          scale: 1.04,
+          transformOrigin: 'center center',
+          duration: 2,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
+        },
+        '-=0.2',
+      )
 
-    return () => { tl.kill() }
+    return () => {
+      tl.kill()
+    }
   }, [])
 
   const pathname = usePathname()
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (externalOnClick) {
-      externalOnClick(e)
-      return
-    }
-    // Fallback when Logo is used outside Nav
-    if (pathname === '/') {
-      e.preventDefault()
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, [pathname, externalOnClick])
+  const handleClick = useCallback(
+    (e: MouseEvent) => {
+      if (externalOnClick) {
+        externalOnClick(e)
+        return
+      }
+      // Fallback when Logo is used outside Nav
+      if (pathname === '/') {
+        e.preventDefault()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    [pathname, externalOnClick],
+  )
 
   return (
     <Link href="/" onClick={handleClick} aria-label="Musab Aqeel - Home">

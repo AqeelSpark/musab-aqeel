@@ -25,7 +25,10 @@ export default function CustomCursor() {
 
   const detectState = useCallback((target: HTMLElement): CursorState => {
     if (target.closest('[data-cursor="project"]')) return 'project'
-    if (target.closest('a, button, [data-cursor="link"], input, textarea, select')) return 'link'
+    if (
+      target.closest('a, button, [data-cursor="link"], input, textarea, select')
+    )
+      return 'link'
     return 'default'
   }, [])
 
@@ -82,12 +85,13 @@ export default function CustomCursor() {
     }
   }, [mouseX, mouseY, dotScale, detectState])
 
-  const ringSize = hoverState === 'project' ? 64 : hoverState === 'link' ? 48 : 32
+  const ringSize =
+    hoverState === 'project' ? 64 : hoverState === 'link' ? 48 : 32
 
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[10000]"
+        className="pointer-events-none fixed top-0 left-0 z-[10000] rounded-full"
         style={{
           x: dotX,
           y: dotY,
@@ -106,7 +110,7 @@ export default function CustomCursor() {
       />
 
       <motion.div
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[10000] flex items-center justify-center"
+        className="pointer-events-none fixed top-0 left-0 z-[10000] flex items-center justify-center rounded-full"
         style={{
           x: ringX,
           y: ringY,
@@ -120,8 +124,14 @@ export default function CustomCursor() {
           marginLeft: -(ringSize / 2),
           marginTop: -(ringSize / 2),
           opacity: visible ? 1 : 0,
-          backgroundColor: hoverState !== 'default' ? 'var(--color-accent-muted)' : 'rgba(0,0,0,0)',
-          borderColor: hoverState !== 'default' ? 'var(--color-accent-border)' : 'var(--color-border-up)',
+          backgroundColor:
+            hoverState !== 'default'
+              ? 'var(--color-accent-muted)'
+              : 'rgba(0,0,0,0)',
+          borderColor:
+            hoverState !== 'default'
+              ? 'var(--color-accent-border)'
+              : 'var(--color-border-up)',
         }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
@@ -130,7 +140,7 @@ export default function CustomCursor() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="text-[10px] uppercase tracking-widest font-mono"
+            className="font-mono text-[10px] tracking-widest uppercase"
             style={{ color: 'var(--color-text-primary)' }}
           >
             View
