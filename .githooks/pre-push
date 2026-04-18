@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+# Block pushes when package-lock.json is out of sync with package.json.
+# This is the exact same strict check CI runs via `npm ci`, so drift is
+# caught locally in ~3 seconds instead of becoming a failed CI email.
+
+set -e
+
+echo "↪ Verifying package-lock.json is in sync…"
+
+if ! npm ci --dry-run --no-audit --no-fund >/dev/null 2>&1; then
+  echo ""
+  echo "✗ package-lock.json is out of sync with package.json"
+  echo ""
+  echo "  Fix:"
+  echo "    npm install --package-lock-only"
+  echo "    git add package-lock.json"
+  echo "    git commit -m 'Sync package-lock.json'"
+  echo ""
+  echo "  Then re-run 'git push'."
+  echo ""
+  exit 1
+fi
+
+echo "✓ Lockfile in sync"
