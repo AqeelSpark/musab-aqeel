@@ -1,7 +1,7 @@
 import type Lenis from 'lenis'
 import type { RefObject } from 'react'
 
-import { scroll } from '@/lib/motion'
+import { scroll, scrollEaseOut } from '@/lib/motion'
 
 export type LenisRef = RefObject<Lenis | null>
 
@@ -9,8 +9,13 @@ type EasingFn = (t: number) => number
 
 interface ScrollTargetOptions {
   duration?: number
-  /** Custom easing for Lenis scrollTo. Leave undefined to use Lenis default. */
-  easing?: EasingFn
+  /**
+   * Easing passed to `lenis.scrollTo`. Defaults to `scrollEaseOut` so every
+   * programmatic scroll lands with the same soft spring as the rest of the
+   * site. Pass an explicit function to override, or `null` to fall back to
+   * Lenis' own default easing.
+   */
+  easing?: EasingFn | null
   offset?: number
   onComplete?: () => void
   delayMs?: number
@@ -24,6 +29,11 @@ function runAfterDelay(callback: () => void, delayMs: number) {
   }
 
   window.setTimeout(callback, delayMs)
+}
+
+function resolveEasing(easing: EasingFn | null | undefined): EasingFn | undefined {
+  if (easing === null) return undefined
+  return easing ?? scrollEaseOut
 }
 
 export function scrollToPageTop(
@@ -44,9 +54,10 @@ export function scrollToPageTop(
     }
 
     if (lenis) {
+      const resolvedEasing = resolveEasing(easing)
       lenis.scrollTo(0, {
         duration,
-        ...(easing && { easing }),
+        ...(resolvedEasing && { easing: resolvedEasing }),
         onComplete,
       })
       return
@@ -77,10 +88,11 @@ export function scrollToElement(
     }
 
     if (lenis) {
+      const resolvedEasing = resolveEasing(easing)
       lenis.scrollTo(target, {
         offset,
         duration,
-        ...(easing && { easing }),
+        ...(resolvedEasing && { easing: resolvedEasing }),
         onComplete,
       })
       return
