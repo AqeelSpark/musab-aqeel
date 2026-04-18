@@ -23,10 +23,9 @@ export function createLenisInstance() {
     lerp: lenisConfig.lerp,
     smoothWheel: true,
     wheelMultiplier: lenisConfig.wheelMultiplier,
-    touchMultiplier: lenisConfig.touchMultiplier,
-    syncTouch: lenisConfig.syncTouch,
-    syncTouchLerp: lenisConfig.syncTouchLerp,
-    touchInertiaExponent: lenisConfig.touchInertiaExponent,
+    // `syncTouch: false` (default) — hand touch back to the browser. See the
+    // `lenis` config docstring in `lib/motion.ts` for the rationale.
+    syncTouch: false,
     stopInertiaOnNavigate: lenisConfig.stopInertiaOnNavigate,
     orientation: 'vertical',
     gestureOrientation: 'vertical',

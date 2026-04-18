@@ -5,8 +5,12 @@ import { scroll } from '@/lib/motion'
 
 export type LenisRef = RefObject<Lenis | null>
 
+type EasingFn = (t: number) => number
+
 interface ScrollTargetOptions {
   duration?: number
+  /** Custom easing for Lenis scrollTo. Leave undefined to use Lenis default. */
+  easing?: EasingFn
   offset?: number
   onComplete?: () => void
   delayMs?: number
@@ -26,6 +30,7 @@ export function scrollToPageTop(
   lenisRef: LenisRef,
   {
     duration = 1,
+    easing,
     delayMs = 0,
     onComplete,
     restartLenis = false,
@@ -41,6 +46,7 @@ export function scrollToPageTop(
     if (lenis) {
       lenis.scrollTo(0, {
         duration,
+        ...(easing && { easing }),
         onComplete,
       })
       return
@@ -56,6 +62,7 @@ export function scrollToElement(
   target: HTMLElement,
   {
     duration = 1,
+    easing,
     offset = -scroll.headerOffset,
     delayMs = 0,
     onComplete,
@@ -73,6 +80,7 @@ export function scrollToElement(
       lenis.scrollTo(target, {
         offset,
         duration,
+        ...(easing && { easing }),
         onComplete,
       })
       return

@@ -43,7 +43,20 @@ function AboutTerminalBlock({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative min-w-0">
-      <div ref={scrollRef} className="overflow-x-auto">
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto"
+        /**
+         * Opt this subtree out of Lenis so the horizontal trackpad/touch scroll
+         * doesn't fight the page scroll. Lenis also applies
+         * `overscroll-behavior: contain` via its own stylesheet when this
+         * attribute is present. `touch-action: pan-x` declares the element's
+         * gesture intent so mobile browsers route diagonal swipes cleanly
+         * (horizontal to the terminal, vertical to the page).
+         */
+        data-lenis-prevent
+        style={{ touchAction: 'pan-x' }}
+      >
         <pre className="m-0 box-border inline-block w-max max-w-none min-w-full p-5 align-top">
           {children}
         </pre>

@@ -18,7 +18,13 @@ import HamburgerIcon from '@/components/ui/HamburgerIcon'
 import Logo from '@/components/ui/Logo'
 import { useLoader } from '@/lib/LoaderContext'
 import { useLenisRef } from '@/lib/lenis-context'
+import { scrollEaseOut } from '@/lib/motion'
 import { scrollToHashSection, scrollToPageTop } from '@/lib/scroll-navigation'
+
+// Scroll after mobile-menu close is longer + bouncy so it matches the rest
+// of the site's ease.out motion language instead of snapping into place.
+const MOBILE_MENU_SCROLL_DURATION = 1.35
+const DESKTOP_SCROLL_DURATION = 1
 
 export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -72,7 +78,8 @@ export default function Nav() {
         }
 
         scrollToPageTop(lenisRef, {
-          duration: mobileOpen ? 0.8 : 1,
+          duration: mobileOpen ? MOBILE_MENU_SCROLL_DURATION : DESKTOP_SCROLL_DURATION,
+          easing: mobileOpen ? scrollEaseOut : undefined,
           delayMs: mobileOpen ? MOBILE_SCROLL_DELAY_MS : 0,
           onComplete: finishProgrammaticScroll,
           restartLenis: mobileOpen,
@@ -112,7 +119,8 @@ export default function Nav() {
 
       if (
         !scrollToHashSection(lenisRef, href, {
-          duration: mobileOpen ? 0.8 : 1,
+          duration: mobileOpen ? MOBILE_MENU_SCROLL_DURATION : DESKTOP_SCROLL_DURATION,
+          easing: mobileOpen ? scrollEaseOut : undefined,
           delayMs: mobileOpen ? MOBILE_SCROLL_DELAY_MS : 0,
           onComplete: finishProgrammaticScroll,
           restartLenis: mobileOpen,

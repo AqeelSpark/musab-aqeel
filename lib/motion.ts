@@ -29,23 +29,43 @@ export const scroll = {
   revealScrub: 0.5,
 }
 
+/**
+ * Easing for `lenis.scrollTo` calls. Mirrors the site's ease.out character
+ * (soft, heavy deceleration) and adds a ~1.2% overshoot past the target
+ * before settling, so programmatic scrolls land with a subtle spring instead
+ * of snapping flat. Use this whenever a scroll should feel like the rest of
+ * the motion system — notably after the mobile menu closes.
+ *
+ * Equivalent to easeOutBack with c1 = 0.6 (back = 1.7158 by default;
+ * dialed way down so the overshoot reads as premium, not springy).
+ */
+export const scrollEaseOut = (t: number): number => {
+  const c1 = 0.6
+  const c3 = c1 + 1
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+}
+
 /** Fine grain + displacement for SVG dust distortion (RevealText / SplitText) */
 export const dust = {
   maxDisplacement: 54,
 } as const
 
-/** Lenis — tuned for smooth wheel + touch without feeling floaty */
+/**
+ * Lenis — smooth wheel on desktop, native scroll on touch devices.
+ *
+ * `syncTouch` is deliberately off (the Lenis default): on mobile we let the
+ * browser drive scroll, which preserves native iOS momentum, keeps pinch-zoom
+ * and viewport resize behaviour intact, and — most importantly — leaves
+ * nested scroll containers (e.g. the About terminal) working natively. Lenis
+ * still tracks the real scroll position through its own scroll listener, so
+ * GSAP ScrollTrigger integration is unaffected.
+ */
 export const lenis = {
-  /** Lower = heavier / smoother follow (0.05–0.12 typical) */
+  /** Lower = heavier / smoother follow (0.05–0.12 typical). */
   lerp: 0.06,
+  /** Desktop wheel feel — 1.0 is native-equivalent. */
   wheelMultiplier: 1.05,
-  touchMultiplier: 1.15,
-  /** iOS: smooth touch scroll in sync with Lenis */
-  syncTouch: true,
-  syncTouchLerp: 0.07,
-  /** Softer touch deceleration curve */
-  touchInertiaExponent: 1.65,
-  /** Cuts drift when navigating (anchor / route) */
+  /** Cuts drift when navigating (anchor / route). */
   stopInertiaOnNavigate: true,
 } as const
 
