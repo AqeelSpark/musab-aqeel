@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useId, useRef, type CSSProperties } from 'react'
 
 import { useScrollTriggerCleanup } from '@/components/ui/useScrollTriggerCleanup'
+import { useIsCoarsePointer } from '@/lib/useIsCoarsePointer'
 import { useLoader } from '@/lib/LoaderContext'
 import { scroll } from '@/lib/motion'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
@@ -56,11 +57,15 @@ export function useTextAnimationBase() {
   const { isReadyToAnimate } = useLoader()
   const { cleanup, scrollTriggerRef } = useScrollTriggerCleanup()
   const reducedMotion = usePrefersReducedMotion()
+  // Dust = SVG feTurbulence + feDisplacementMap. Cheap on desktop GPUs,
+  // prohibitively expensive on mobile GPUs where it causes frame drops
+  // during scroll. Disable on touch-primary devices.
+  const coarsePointer = useIsCoarsePointer()
 
   return {
     cleanup,
     displacementRef,
-    dustActive: !reducedMotion,
+    dustActive: !reducedMotion && !coarsePointer,
     filterId,
     isReadyToAnimate,
     reducedMotion,
