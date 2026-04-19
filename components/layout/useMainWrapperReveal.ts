@@ -73,30 +73,43 @@ export function useMainWrapperReveal({
 
       timelineRef.current = timeline
 
+      // Phase 1 — loader content acknowledges it's leaving: fast ease-in
+      // fade with a slight upward drift.
       timeline.to(loaderContent, {
         opacity: 0,
+        y: -24,
         duration: 0.4,
         ease: 'power2.in',
       })
 
+      // Phase 2 — loader slides off the top of the viewport. Pure transform
+      // + opacity animation, which is GPU-composited reliably on iOS/macOS
+      // Safari where clip-path on fixed elements has long-standing jank.
+      // `yPercent: -105` gives a 5% buffer so there's never a sub-pixel
+      // sliver left at the bottom edge during a rounding stutter.
       timeline.to(
         loader,
         {
-          clipPath: 'inset(0% 0% 100% 0%)',
-          duration: 1.2,
+          yPercent: -105,
+          duration: 1.0,
           ease: 'power4.inOut',
         },
         '-=0.15',
       )
 
+      // Phase 3 — page wrapper rises into place in parallel with the loader
+      // lift-off. Shared direction (both moving up) reads as one coordinated
+      // motion rather than two overlapping events. A softer ease-out settles
+      // the content as the loader accelerates away.
       timeline.fromTo(
         wrapper,
-        { clipPath: 'inset(0% 0% 100% 0%)' },
+        { y: 48, opacity: 0 },
         {
-          clipPath: 'inset(0% 0% 0% 0%)',
-          duration: 1.2,
-          ease: 'power4.inOut',
-          clearProps: 'clipPath',
+          y: 0,
+          opacity: 1,
+          duration: 1.0,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity,willChange',
         },
         '<',
       )

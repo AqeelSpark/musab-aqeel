@@ -28,7 +28,18 @@ export default function MainWrapper({ children }: { children: ReactNode }) {
   return (
     <div
       ref={wrapperRef}
-      style={revealed ? undefined : { clipPath: 'inset(0% 0% 100% 0%)' }}
+      style={
+        revealed
+          ? undefined
+          : {
+              // Seeds GSAP's fromTo so the first paint and the animation start
+              // match. The loader (z-9999, opaque) covers this offset content
+              // until it lifts off in `useMainWrapperReveal`.
+              transform: 'translateY(48px)',
+              opacity: 0,
+              willChange: 'transform, opacity',
+            }
+      }
     >
       {children}
     </div>
