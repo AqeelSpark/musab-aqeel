@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import SplitText from '@/components/ui/SplitText'
-import RevealText from '@/components/ui/RevealText'
+import SplitText from '@/components/ui/reveal/SplitText'
+import RevealText from '@/components/ui/reveal/RevealText'
 
 const SCROLL_EPS = 2
 

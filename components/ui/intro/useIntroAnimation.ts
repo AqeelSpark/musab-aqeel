@@ -2,16 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-import { LOADER_DURATION_MS } from '@/lib/motion'
+import { INTRO_DURATION_MS } from '@/lib/motion'
 
 /**
- * Loader choreography: three-word morph cycles through the three role words.
+ * Intro choreography: three-word morph cycles through the role words.
  * With `textIndexRef` seeded at `TEXTS.length - 1`, the sequence is:
  *   cooldown (show "Developer") → morph → cooldown (show "Architect") →
  *   morph → hold on "Operator".
  * Total visible animation = 2 × (MORPH_TIME + COOLDOWN_TIME) = 2.8 s.
- * Combined with LOADER_DURATION_MS = 3000 ms, "Operator" holds for ~200 ms
- * before the page reveal starts.
+ * Combined with INTRO_DURATION_MS = 3000 ms, "Operator" holds for ~200 ms
+ * before the page reveal begins.
+ *
+ * Per-span `filter: blur(px)` + `opacity` pairs with the container's
+ * `contrast(28)` to produce the gooey threshold melt — see the doc
+ * comment in `Intro.tsx` for the full compositing recipe.
+ *
+ * Blur values use a reciprocal curve (8 / f - 8) — same shape as the
+ * original — so the spread stays subtle for most of the transition and
+ * only spikes near the edges, which is where the contrast threshold
+ * produces the characteristic "droplet breaking apart" look.
  */
 const TEXTS = ['Developer', 'Architect', 'Operator']
 const MORPH_TIME = 1.0
@@ -23,6 +32,7 @@ function updateMorphStyles(
   textIndex: number,
   fraction: number,
 ) {
+  // text2 is incoming (fraction 0→1), text1 is outgoing.
   text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`
   text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`
 
@@ -35,21 +45,13 @@ function updateMorphStyles(
 }
 
 function resetCooldownStyles(text1: HTMLSpanElement, text2: HTMLSpanElement) {
-  text2.style.filter = ''
-  text2.style.opacity = '100%'
   text1.style.filter = ''
-  text1.style.opacity = '0%'
+  text1.style.opacity = '0'
+  text2.style.filter = ''
+  text2.style.opacity = '1'
 }
 
-export function useLoaderAnimation({
-  assetsReady,
-  isLoading,
-  progress,
-}: {
-  assetsReady: boolean
-  isLoading: boolean
-  progress: number
-}) {
+export function useIntroAnimation({ isVisible }: { isVisible: boolean }) {
   const [displayProgress, setDisplayProgress] = useState(0)
 
   const text1Ref = useRef<HTMLSpanElement>(null)
@@ -61,20 +63,8 @@ export function useLoaderAnimation({
   const morphRef = useRef(0)
   const cooldownRef = useRef(COOLDOWN_TIME)
   const startTimeRef = useRef(0)
-  const displayRef = useRef(0)
   const prevRoundedRef = useRef(0)
   const reachedLastRef = useRef(false)
-
-  const assetsReadyRef = useRef(false)
-  const progressRef = useRef(0)
-
-  useEffect(() => {
-    assetsReadyRef.current = assetsReady
-  }, [assetsReady])
-
-  useEffect(() => {
-    progressRef.current = progress
-  }, [progress])
 
   useEffect(() => {
     const text1 = text1Ref.current
@@ -83,15 +73,12 @@ export function useLoaderAnimation({
       return
     }
 
-    const primaryText: HTMLSpanElement = text1
-    const secondaryText: HTMLSpanElement = text2
-
     const initialTime = Date.now()
     timeRef.current = initialTime
     startTimeRef.current = initialTime
 
-    primaryText.textContent = TEXTS[textIndexRef.current % TEXTS.length]
-    secondaryText.textContent = TEXTS[(textIndexRef.current + 1) % TEXTS.length]
+    text1.textContent = TEXTS[textIndexRef.current % TEXTS.length]
+    text2.textContent = TEXTS[(textIndexRef.current + 1) % TEXTS.length]
 
     const maxIndex = textIndexRef.current + TEXTS.length - 1
 
@@ -105,12 +92,12 @@ export function useLoaderAnimation({
         fraction = 1
       }
 
-      updateMorphStyles(primaryText, secondaryText, textIndexRef.current, fraction)
+      updateMorphStyles(text1!, text2!, textIndexRef.current, fraction)
     }
 
     function doCooldown() {
       morphRef.current = 0
-      resetCooldownStyles(primaryText, secondaryText)
+      resetCooldownStyles(text1!, text2!)
     }
 
     function animateFrame() {
@@ -119,18 +106,8 @@ export function useLoaderAnimation({
       const deltaSeconds = (now - timeRef.current) / 1000
       timeRef.current = now
 
-      if (assetsReadyRef.current) {
-        const linearTarget = Math.min((elapsed / LOADER_DURATION_MS) * 100, 100)
-        if (linearTarget >= 100) {
-          displayRef.current += (100 - displayRef.current) * 0.12
-        } else {
-          displayRef.current = linearTarget
-        }
-      } else {
-        displayRef.current += (progressRef.current - displayRef.current) * 0.08
-      }
-
-      const rounded = Math.min(Math.round(displayRef.current), 100)
+      // Cosmetic progress counter: linear elapsed time, 0–100.
+      const rounded = Math.min(Math.round((elapsed / INTRO_DURATION_MS) * 100), 100)
       if (rounded !== prevRoundedRef.current) {
         prevRoundedRef.current = rounded
         setDisplayProgress(rounded)
@@ -172,10 +149,10 @@ export function useLoaderAnimation({
   }, [])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isVisible) {
       cancelAnimationFrame(rafRef.current)
     }
-  }, [isLoading])
+  }, [isVisible])
 
   return {
     displayProgress,

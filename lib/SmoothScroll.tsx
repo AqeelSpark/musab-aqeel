@@ -6,7 +6,7 @@ import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 
 import { LenisContext } from '@/lib/lenis-context'
-import { useLoader } from '@/lib/LoaderContext'
+import { useIntro } from '@/lib/IntroContext'
 import {
   attachLenisTicker,
   createLenisInstance,
@@ -18,7 +18,7 @@ import {
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null)
   const pathname = usePathname()
-  const { isLoading, isReadyToAnimate } = useLoader()
+  const { isVisible: isIntroVisible, isReadyToAnimate } = useIntro()
 
   useEffect(() => {
     setManualScrollRestoration()
@@ -40,8 +40,8 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     const lenis = lenisRef.current
     if (!lenis) return
 
-    syncLenisEnabled(lenis, isReadyToAnimate && !isLoading)
-  }, [isLoading, isReadyToAnimate])
+    syncLenisEnabled(lenis, isReadyToAnimate && !isIntroVisible)
+  }, [isIntroVisible, isReadyToAnimate])
 
   useEffect(() => {
     const lenis = lenisRef.current

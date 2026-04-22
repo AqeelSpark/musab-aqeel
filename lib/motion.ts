@@ -70,8 +70,11 @@ export const lenis = {
 } as const
 
 /**
- * Minimum time the loader stays on screen before revealing the page.
- * Tuned so the three-word morph (2.8 s total) completes and the final word
- * ("Operator") holds for ~200 ms before the reveal begins.
+ * Total time the cosmetic intro stays on screen before the page reveal
+ * begins. Tuned so the three-word morph (2.8 s total) completes and the
+ * final word ("Operator") holds for ~200 ms before exit.
+ *
+ * This is a pure timer, not a "loader" — the site finishes mounting well
+ * before this elapses.
  */
-export const LOADER_DURATION_MS = 3000
+export const INTRO_DURATION_MS = 3000

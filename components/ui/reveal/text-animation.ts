@@ -3,9 +3,9 @@
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useId, useRef, type CSSProperties } from 'react'
 
-import { useScrollTriggerCleanup } from '@/components/ui/useScrollTriggerCleanup'
+import { useScrollTriggerCleanup } from '@/components/ui/reveal/useScrollTriggerCleanup'
+import { useIntro } from '@/lib/IntroContext'
 import { useIsCoarsePointer } from '@/lib/useIsCoarsePointer'
-import { useLoader } from '@/lib/LoaderContext'
 import { scroll } from '@/lib/motion'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
@@ -54,7 +54,7 @@ export function useTextAnimationBase() {
   const displacementRef = useRef<SVGFEDisplacementMapElement | null>(null)
   const reactId = useId()
   const filterId = `dust-${reactId.replace(/:/g, '')}`
-  const { isReadyToAnimate } = useLoader()
+  const { isReadyToAnimate } = useIntro()
   const { cleanup, scrollTriggerRef } = useScrollTriggerCleanup()
   const reducedMotion = usePrefersReducedMotion()
   // Dust = SVG feTurbulence + feDisplacementMap. Cheap on desktop GPUs,

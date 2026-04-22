@@ -3,14 +3,14 @@
 import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { gsap } from 'gsap'
 
-import DustFilterSvg from '@/components/ui/DustFilterSvg'
+import DustFilterSvg from '@/components/ui/reveal/DustFilterSvg'
 import {
   createRevealScrollTrigger,
   getDustFilterStyle,
   getRevealScrollStart,
   scheduleScrollTriggerRefresh,
   useTextAnimationBase,
-} from '@/components/ui/text-animation'
+} from '@/components/ui/reveal/text-animation'
 import { dust, stagger } from '@/lib/motion'
 
 interface SplitTextProps {

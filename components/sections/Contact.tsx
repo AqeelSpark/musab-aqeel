@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
-import SplitText from '@/components/ui/SplitText'
-import RevealText from '@/components/ui/RevealText'
+import SplitText from '@/components/ui/reveal/SplitText'
+import RevealText from '@/components/ui/reveal/RevealText'
 import MagneticButton from '@/components/ui/MagneticButton'
 import {
   CONTACT_BUDGET_OPTIONS,

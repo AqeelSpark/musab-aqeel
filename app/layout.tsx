@@ -4,9 +4,10 @@ import localFont from 'next/font/local'
 import SmoothScroll from '@/lib/SmoothScroll'
 import Nav from '@/components/layout/Nav'
 import MainWrapper from '@/components/layout/MainWrapper'
-import Loader from '@/components/ui/Loader'
+import Intro from '@/components/ui/Intro'
+import IntroFilterDefs from '@/components/ui/intro/IntroFilterDefs'
 import CustomCursor from '@/components/ui/CustomCursor'
-import { LoaderProvider } from '@/lib/LoaderContext'
+import { IntroProvider } from '@/lib/IntroContext'
 import { personJsonLd, websiteJsonLd } from '@/lib/structured-data'
 import {
   SITE_NAME,
@@ -172,8 +173,12 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <LoaderProvider>
-          <Loader />
+        {/* SVG filter defs mounted at body root so `url(#intro-threshold)`
+            resolves reliably on iOS Safari. Must sit outside the fixed
+            `.intro` container. */}
+        <IntroFilterDefs />
+        <IntroProvider>
+          <Intro />
           <SmoothScroll>
             <MainWrapper>
               <Nav />
@@ -184,7 +189,7 @@ export default function RootLayout({
           </SmoothScroll>
           <CustomCursor />
           <div className="noise" aria-hidden="true" />
-        </LoaderProvider>
+        </IntroProvider>
       </body>
     </html>
   )

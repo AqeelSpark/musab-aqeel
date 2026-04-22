@@ -16,7 +16,7 @@ import {
 } from '@/components/layout/nav/useNavState'
 import HamburgerIcon from '@/components/ui/HamburgerIcon'
 import Logo from '@/components/ui/Logo'
-import { useLoader } from '@/lib/LoaderContext'
+import { useIntro } from '@/lib/IntroContext'
 import { useLenisRef } from '@/lib/lenis-context'
 import { scrollToHashSection, scrollToPageTop } from '@/lib/scroll-navigation'
 
@@ -32,7 +32,7 @@ export default function Nav() {
   const pathname = usePathname()
   const router = useRouter()
   const lenisRef = useLenisRef()
-  const { isReadyToAnimate } = useLoader()
+  const { isReadyToAnimate } = useIntro()
   const scrolled = useHeaderScrolledState()
   const {
     activeSection,

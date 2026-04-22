@@ -1,4 +1,4 @@
-import RevealText from '@/components/ui/RevealText'
+import RevealText from '@/components/ui/reveal/RevealText'
 
 const TECH_STACK = [
   'React',

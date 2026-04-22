@@ -6,6 +6,7 @@ import { animate, useMotionValue, useSpring } from 'motion/react'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 import {
+  CURSOR_RIPPLE_MS,
   cursorDotSpring,
   cursorPressSpring,
   cursorReleaseSpring,
@@ -19,6 +20,20 @@ const INTERACTIVE_CURSOR_SELECTOR =
 
 const TEXT_INPUT_SELECTOR =
   'input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), textarea, select, [contenteditable="true"]'
+
+/**
+ * Each press captures the click coordinates, the ring size, and the accent
+ * flavour at the exact moment the user pressed. The ripple is pinned to
+ * these frozen values so it doesn't follow the ring's lagging spring and
+ * doesn't resize mid-flight if the cursor state changes.
+ */
+export interface CursorRipple {
+  id: number
+  x: number
+  y: number
+  size: number
+  accent: boolean
+}
 
 function detectCursorState(target: Element): CursorState {
   if (target.closest('[data-cursor="project"]')) {
@@ -36,6 +51,10 @@ function detectCursorState(target: Element): CursorState {
   return 'default'
 }
 
+function isAccentState(state: CursorState): boolean {
+  return state === 'link' || state === 'project'
+}
+
 export function useCustomCursor() {
   const reducedMotion = usePrefersReducedMotion()
   const visibleRef = useRef(false)
@@ -45,13 +64,7 @@ export function useCustomCursor() {
 
   const [hoverState, setHoverState] = useState<CursorState>('default')
   const [visible, setVisible] = useState(false)
-
-  /**
-   * Increments on every mousedown so a keyed ripple element re-mounts and
-   * replays its animation. State update is fine here — it happens at the
-   * cadence of clicks, not mousemoves.
-   */
-  const [pressTick, setPressTick] = useState(0)
+  const [ripples, setRipples] = useState<CursorRipple[]>([])
 
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -96,9 +109,12 @@ export function useCustomCursor() {
       return
     }
 
+    const rippleTimers = new Set<number>()
+
     document.documentElement.classList.add('custom-cursor-active')
 
     let scrollRaf = 0
+    let rippleIdCounter = 0
 
     const scheduleScrollSync = () => {
       if (scrollRaf) {
@@ -155,10 +171,39 @@ export function useCustomCursor() {
       setCursorState(detectCursorState(target))
     }
 
-    function handleMouseDown() {
+    function spawnRipple(event: MouseEvent) {
+      // Skip ripples in text-input state — the cursor is hidden there, so
+      // there's no ring to anchor feedback to.
+      if (stateRef.current === 'text') {
+        return
+      }
+
+      const id = rippleIdCounter++
+      const ripple: CursorRipple = {
+        id,
+        x: event.clientX,
+        y: event.clientY,
+        size: getCursorRingSize(stateRef.current),
+        accent: isAccentState(stateRef.current),
+      }
+
+      setRipples((prev) => [...prev, ripple])
+
+      // Timer-based cleanup — doesn't rely on `onAnimationComplete` firing
+      // (which can be missed if a parent unmounts or if a rapid second click
+      // replaces the element before the callback lands).
+      const timer = window.setTimeout(() => {
+        rippleTimers.delete(timer)
+        setRipples((prev) => prev.filter((r) => r.id !== id))
+      }, CURSOR_RIPPLE_MS + 80)
+
+      rippleTimers.add(timer)
+    }
+
+    function handleMouseDown(event: MouseEvent) {
       animate(dotScale, 0.7, cursorPressSpring)
       animate(ringScale, 0.86, cursorPressSpring)
-      setPressTick((tick) => tick + 1)
+      spawnRipple(event)
     }
 
     function handleMouseUp() {
@@ -202,6 +247,12 @@ export function useCustomCursor() {
         cancelAnimationFrame(scrollRaf)
       }
 
+      // Clear any in-flight ripple cleanup timers so unmount is clean.
+      for (const timer of rippleTimers) {
+        window.clearTimeout(timer)
+      }
+      rippleTimers.clear()
+
       document.documentElement.classList.remove('custom-cursor-active')
     }
   }, [
@@ -226,13 +277,13 @@ export function useCustomCursor() {
     dotX,
     dotY,
     hoverState,
-    pressTick,
     reducedMotion,
     ringHidden: textMode,
     ringScale,
     ringSize: getCursorRingSize(hoverState),
     ringX,
     ringY,
+    ripples,
     visible,
   }
 }

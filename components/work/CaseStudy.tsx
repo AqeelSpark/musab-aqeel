@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import RevealText from '@/components/ui/RevealText'
+import RevealText from '@/components/ui/reveal/RevealText'
 import Tag from '@/components/ui/Tag'
 import ProjectCard from '@/components/work/ProjectCard'
 import {

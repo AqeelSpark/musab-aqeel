@@ -10,6 +10,7 @@ import {
   DOT_SIZE,
   type CursorState,
 } from './constants'
+import type { CursorRipple } from './useCustomCursor'
 
 interface CursorVisualProps {
   dotHidden: boolean
@@ -17,12 +18,12 @@ interface CursorVisualProps {
   dotX: MotionValue<number>
   dotY: MotionValue<number>
   hoverState: CursorState
-  pressTick: number
   ringHidden: boolean
   ringScale: MotionValue<number>
   ringSize: number
   ringX: MotionValue<number>
   ringY: MotionValue<number>
+  ripples: CursorRipple[]
   visible: boolean
 }
 
@@ -38,26 +39,27 @@ export function CursorVisual({
   dotX,
   dotY,
   hoverState,
-  pressTick,
   ringHidden,
   ringScale,
   ringSize,
   ringX,
   ringY,
+  ripples,
   visible,
 }: CursorVisualProps) {
   const accent = isAccentState(hoverState)
 
   return (
     <>
-      {/* Dot — follows the pointer tightly; hides on links & text inputs. */}
+      {/* Dot — follows the pointer tightly; fades out on links & text
+          inputs via opacity only (no scale snap). */}
       <motion.div
         aria-hidden
         className="pointer-events-none fixed top-0 left-0 z-10000 rounded-full will-change-transform"
         style={{
           x: dotX,
           y: dotY,
-          scale: dotHidden ? 0 : dotScale,
+          scale: dotScale,
           width: DOT_SIZE,
           height: DOT_SIZE,
           marginLeft: -DOT_OFFSET,
@@ -129,22 +131,23 @@ export function CursorVisual({
         </AnimatePresence>
       </motion.div>
 
-      {/* Press ripple — keyed by pressTick so each click remounts & replays.
-          Not wrapped in AnimatePresence: rapid presses should replace the
-          previous ripple cleanly rather than animate two concurrently. */}
-      {pressTick > 0 && visible && !ringHidden && (
+      {/* Press ripples — each click spawns a stable ripple at the actual
+          click coordinates, with size/accent frozen at press time. Ripples
+          unmount themselves via the hook's cleanup timer, so rapid clicks
+          stack naturally without replacing one another. */}
+      {ripples.map((ripple) => (
         <motion.div
-          key={pressTick}
+          key={ripple.id}
           aria-hidden
           className="pointer-events-none fixed top-0 left-0 z-10000 rounded-full will-change-transform"
           style={{
-            x: ringX,
-            y: ringY,
-            width: ringSize,
-            height: ringSize,
-            marginLeft: -(ringSize / 2),
-            marginTop: -(ringSize / 2),
-            border: accent
+            x: ripple.x,
+            y: ripple.y,
+            width: ripple.size,
+            height: ripple.size,
+            marginLeft: -(ripple.size / 2),
+            marginTop: -(ripple.size / 2),
+            border: ripple.accent
               ? '1px solid rgba(212, 255, 0, 0.55)'
               : '1px solid rgba(180, 180, 180, 0.75)',
             mixBlendMode: 'difference',
@@ -156,7 +159,7 @@ export function CursorVisual({
             ease: [0.22, 1, 0.36, 1],
           }}
         />
-      )}
+      ))}
     </>
   )
 }

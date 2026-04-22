@@ -3,9 +3,9 @@
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import SplitText from '@/components/ui/SplitText'
+import SplitText from '@/components/ui/reveal/SplitText'
 import MagneticButton from '@/components/ui/MagneticButton'
-import { useLoader } from '@/lib/LoaderContext'
+import { useIntro } from '@/lib/IntroContext'
 import { useLenisRef } from '@/lib/lenis-context'
 import { duration, ease } from '@/lib/motion'
 import { scrollToHashSection } from '@/lib/scroll-navigation'
@@ -13,7 +13,7 @@ import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
 export default function Hero() {
   const scrollLineRef = useRef<HTMLDivElement>(null)
-  const { isReadyToAnimate } = useLoader()
+  const { isReadyToAnimate } = useIntro()
   const lenisRef = useLenisRef()
   const reducedMotion = usePrefersReducedMotion()
 

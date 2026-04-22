@@ -1,5 +1,5 @@
-import RevealText from '@/components/ui/RevealText'
-import SplitText from '@/components/ui/SplitText'
+import RevealText from '@/components/ui/reveal/RevealText'
+import SplitText from '@/components/ui/reveal/SplitText'
 import type { Testimonial } from '@/types'
 
 const TESTIMONIALS: Testimonial[] = [
