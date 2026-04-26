@@ -49,7 +49,7 @@ export default function RevealText({
     const revealScrollTrigger = createRevealScrollTrigger(el, start)
 
     const fe = displacementRef.current
-    const useDust = !reducedMotion && fe
+    const useDust = dustActive && !reducedMotion && fe
 
     if (useDust) {
       const tl = gsap.timeline({
@@ -89,7 +89,15 @@ export default function RevealText({
       cancelRefresh()
       cleanup()
     }
-  }, [delay, cleanup, displacementRef, isReadyToAnimate, reducedMotion, scrollTriggerRef])
+  }, [
+    delay,
+    cleanup,
+    displacementRef,
+    dustActive,
+    isReadyToAnimate,
+    reducedMotion,
+    scrollTriggerRef,
+  ])
 
   return (
     <>

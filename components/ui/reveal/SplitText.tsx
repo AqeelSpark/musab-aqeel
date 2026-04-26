@@ -68,7 +68,7 @@ export default function SplitText({
       gsap.set(words, { yPercent: 110 })
 
       const fe = displacementRef.current
-      const useDust = !reducedMotion && fe
+      const useDust = dustActive && !reducedMotion && fe
 
       if (useDust) {
         const tl = gsap.timeline({ delay })
@@ -110,7 +110,7 @@ export default function SplitText({
     gsap.set(words, { yPercent: 110 })
 
     const fe = displacementRef.current
-    const useDust = !reducedMotion && fe
+    const useDust = dustActive && !reducedMotion && fe
     const st = createRevealScrollTrigger(container, start)
 
     const wordsTween = gsap.fromTo(
@@ -152,6 +152,7 @@ export default function SplitText({
     delay,
     cleanup,
     displacementRef,
+    dustActive,
     isReadyToAnimate,
     reducedMotion,
     scrollTriggerRef,

@@ -54,7 +54,7 @@ export default function Hero() {
       className="hero relative flex flex-col overflow-hidden px-6 pt-28 pb-16 md:px-12 md:pt-32 md:pb-24 lg:px-24"
     >
       <div
-        className="pointer-events-none absolute top-1/3 right-1/4 h-[800px] w-[800px] rounded-full"
+        className="pointer-events-none absolute top-1/3 right-1/4 h-200 w-200 rounded-full"
         style={{
           background:
             'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)',
@@ -64,7 +64,7 @@ export default function Hero() {
       />
 
       {/* Headline block */}
-      <div className="relative z-10 flex max-w-[1200px] flex-1 flex-col justify-center">
+      <div className="relative z-10 flex max-w-300 flex-1 flex-col justify-center">
         <div className="mb-4 md:mb-6">
           <SplitText
             as="h1"
@@ -92,7 +92,7 @@ export default function Hero() {
 
         <motion.p
           {...fadeUp(0.35)}
-          className="font-body mb-8 max-w-[600px] text-base leading-relaxed md:mb-12 md:text-lg"
+          className="font-body mb-8 max-w-150 text-base leading-relaxed md:mb-12 md:text-lg"
           style={{
             fontWeight: 300,
             color: 'var(--color-text-secondary)',

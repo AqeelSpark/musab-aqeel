@@ -104,7 +104,7 @@ const DETAILS = [
 export default function About() {
   return (
     <section id="about" className="px-6 py-24 md:px-12 md:py-32 lg:px-24">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
+      <div className="mx-auto grid max-w-350 grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
         <div>
           <RevealText>
             <span className="section-label mb-4 block">{'// 01 About'}</span>
@@ -119,7 +119,7 @@ export default function About() {
 
           <RevealText delay={0.05}>
             <p
-              className="font-body mb-10 max-w-[520px] text-lg leading-relaxed"
+              className="font-body mb-10 max-w-130 text-lg leading-relaxed"
               style={{
                 fontWeight: 300,
                 color: 'var(--color-text-secondary)',
@@ -161,7 +161,7 @@ export default function About() {
 
         <RevealText delay={0.15}>
           <div
-            className="overflow-hidden rounded-[4px]"
+            className="overflow-hidden rounded-sm"
             style={{
               backgroundColor: 'var(--color-surface-up)',
               border: '1px solid var(--color-border)',
