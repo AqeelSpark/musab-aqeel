@@ -1,23 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Per-request nonce-based Content Security Policy.
+ * Static-compatible Content Security Policy.
  *
- * Scripts must carry the generated nonce; Next.js wires this automatically when
- * the `x-nonce` request header is present. JSON-LD (`type="application/ld+json"`)
- * is exempt from `script-src` per the CSP spec because it is not a script MIME
- * type, so it continues to work without a nonce.
+ * The home/work pages are statically generated on Vercel. A per-request nonce
+ * cannot be added to Next.js' prerendered inline RSC/hydration scripts, so a
+ * nonce-based script policy blocks hydration and leaves the intro overlay stuck.
+ * Keep scripts same-origin and allow the inline bootstrap that static Next.js
+ * pages require.
  *
  * Dev mode relaxes directives for HMR (ws:/wss:, `'unsafe-eval'`) and for
  * @vercel/analytics / @vercel/speed-insights debug scripts and beacons.
  */
 export function proxy(request: NextRequest) {
-  const nonce = btoa(crypto.randomUUID())
   const isDev = process.env.NODE_ENV === 'development'
 
   const directives = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ''}`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ''}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self' data:`,
@@ -32,7 +32,6 @@ export function proxy(request: NextRequest) {
   const csp = directives.join('; ')
 
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', csp)
 
   const response = NextResponse.next({
