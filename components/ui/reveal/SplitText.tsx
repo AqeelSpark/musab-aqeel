@@ -13,6 +13,16 @@ import {
 } from '@/components/ui/reveal/text-animation'
 import { dust, stagger } from '@/lib/motion'
 
+const WORD_REVEAL_OFFSET = '1.1em'
+const WORD_HIDDEN_STATE = {
+  y: WORD_REVEAL_OFFSET,
+  force3D: true,
+} as const
+const WORD_VISIBLE_STATE = {
+  y: 0,
+  force3D: true,
+} as const
+
 interface SplitTextProps {
   children: string
   className?: string
@@ -53,7 +63,7 @@ export default function SplitText({
     const isLoad = propTrigger === 'load'
 
     if (!isReadyToAnimate) {
-      gsap.set(words, { yPercent: 110 })
+      gsap.set(words, WORD_HIDDEN_STATE)
       return
     }
 
@@ -65,7 +75,7 @@ export default function SplitText({
     loadTlRef.current = null
 
     if (isLoad) {
-      gsap.set(words, { yPercent: 110 })
+      gsap.set(words, WORD_HIDDEN_STATE)
 
       const fe = displacementRef.current
       const useDust = dustActive && !reducedMotion && fe
@@ -80,7 +90,7 @@ export default function SplitText({
         ).to(
           words,
           {
-            yPercent: 0,
+            ...WORD_VISIBLE_STATE,
             duration: 0.8,
             ease: 'power3.out',
             stagger: stagger.tight,
@@ -91,7 +101,7 @@ export default function SplitText({
       } else {
         const tl = gsap.timeline({ delay })
         tl.to(words, {
-          yPercent: 0,
+          ...WORD_VISIBLE_STATE,
           duration: 0.8,
           ease: 'power3.out',
           stagger: stagger.tight,
@@ -107,22 +117,18 @@ export default function SplitText({
 
     const start = getRevealScrollStart(delay)
 
-    gsap.set(words, { yPercent: 110 })
+    gsap.set(words, WORD_HIDDEN_STATE)
 
     const fe = displacementRef.current
     const useDust = dustActive && !reducedMotion && fe
     const st = createRevealScrollTrigger(container, start)
 
-    const wordsTween = gsap.fromTo(
-      words,
-      { yPercent: 110 },
-      {
-        yPercent: 0,
-        ease: 'none',
-        stagger: 0.06,
-        scrollTrigger: st,
-      },
-    )
+    const wordsTween = gsap.fromTo(words, WORD_HIDDEN_STATE, {
+      ...WORD_VISIBLE_STATE,
+      ease: 'none',
+      stagger: 0.06,
+      scrollTrigger: st,
+    })
 
     scrollTriggerRef.current = wordsTween.scrollTrigger ?? null
 
@@ -174,7 +180,7 @@ export default function SplitText({
       >
         {words.map((word, i) => (
           <span key={i} className="inline-block overflow-hidden">
-            <span className="split-word inline-block">
+            <span className="split-word inline-block will-change-transform">
               {word}
               {i < words.length - 1 ? '\u00A0' : ''}
             </span>
