@@ -8,7 +8,8 @@ import { NextResponse, type NextRequest } from 'next/server'
  * is exempt from `script-src` per the CSP spec because it is not a script MIME
  * type, so it continues to work without a nonce.
  *
- * Dev mode relaxes a few directives for HMR (ws:/wss:, `'unsafe-eval'`).
+ * Dev mode relaxes directives for HMR (ws:/wss:, `'unsafe-eval'`) and for
+ * @vercel/analytics / @vercel/speed-insights debug scripts and beacons.
  */
 export function proxy(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID())
@@ -16,11 +17,11 @@ export function proxy(request: NextRequest) {
 
   const directives = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ''}`,
+    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ''}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self' data:`,
-    `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
+    `connect-src 'self'${isDev ? ' ws: wss: https://va.vercel-scripts.com https://vitals.vercel-insights.com' : ''}`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

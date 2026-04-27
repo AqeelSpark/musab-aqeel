@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import localFont from 'next/font/local'
 import SmoothScroll from '@/lib/SmoothScroll'
 import Nav from '@/components/layout/Nav'
@@ -190,6 +192,8 @@ export default function RootLayout({
           <CustomCursor />
           <div className="noise" aria-hidden="true" />
         </IntroProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
