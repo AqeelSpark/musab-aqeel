@@ -51,7 +51,7 @@ export default function Hero() {
   return (
     <section
       aria-label="Introduction"
-      className="hero relative flex flex-col overflow-hidden px-6 pt-28 pb-16 md:px-12 md:pt-32 md:pb-24 lg:px-24"
+      className="hero relative flex flex-col px-6 pt-28 pb-16 md:px-12 md:pt-32 md:pb-24 lg:px-24"
     >
       <div
         className="pointer-events-none absolute top-1/3 right-1/4 h-200 w-200 rounded-full"

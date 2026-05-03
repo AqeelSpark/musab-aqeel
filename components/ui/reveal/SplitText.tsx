@@ -77,39 +77,63 @@ export default function SplitText({
     if (isLoad) {
       gsap.set(words, WORD_HIDDEN_STATE)
 
-      const fe = displacementRef.current
-      const useDust = dustActive && !reducedMotion && fe
+      let loadCanceled = false
+      let raf1 = 0
+      let raf2 = 0
 
-      if (useDust) {
-        const tl = gsap.timeline({ delay })
-        tl.fromTo(
-          fe,
-          { attr: { scale: dust.maxDisplacement } },
-          { attr: { scale: 0 }, duration: 0.75, ease: 'power3.out' },
-          0,
-        ).to(
-          words,
-          {
+      const runLoadTimeline = () => {
+        if (loadCanceled) return
+        const liveContainer = containerRef.current
+        if (!liveContainer) return
+        const liveWords =
+          liveContainer.querySelectorAll<HTMLSpanElement>('.split-word')
+        if (liveWords.length === 0) return
+
+        gsap.set(liveWords, WORD_HIDDEN_STATE)
+
+        const fe = displacementRef.current
+        const useDust = dustActive && !reducedMotion && fe
+
+        if (useDust) {
+          const tl = gsap.timeline({ delay })
+          tl.fromTo(
+            fe,
+            { attr: { scale: dust.maxDisplacement } },
+            { attr: { scale: 0 }, duration: 0.75, ease: 'power3.out' },
+            0,
+          ).to(
+            liveWords,
+            {
+              ...WORD_VISIBLE_STATE,
+              duration: 0.8,
+              ease: 'power3.out',
+              stagger: stagger.tight,
+            },
+            0,
+          )
+          loadTlRef.current = tl
+        } else {
+          const tl = gsap.timeline({ delay })
+          tl.to(liveWords, {
             ...WORD_VISIBLE_STATE,
             duration: 0.8,
             ease: 'power3.out',
             stagger: stagger.tight,
-          },
-          0,
-        )
-        loadTlRef.current = tl
-      } else {
-        const tl = gsap.timeline({ delay })
-        tl.to(words, {
-          ...WORD_VISIBLE_STATE,
-          duration: 0.8,
-          ease: 'power3.out',
-          stagger: stagger.tight,
-        })
-        loadTlRef.current = tl
+          })
+          loadTlRef.current = tl
+        }
       }
 
+      // Two rAFs after intro/reveal lets Chromium Android commit compositor
+      // state before staggered transforms inside overflow clips start painting.
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(runLoadTimeline)
+      })
+
       return () => {
+        loadCanceled = true
+        cancelAnimationFrame(raf1)
+        cancelAnimationFrame(raf2)
         loadTlRef.current?.kill()
         loadTlRef.current = null
       }
@@ -179,8 +203,12 @@ export default function SplitText({
         style={getDustFilterStyle(dustActive, filterId, style)}
       >
         {words.map((word, i) => (
-          <span key={i} className="inline-block overflow-hidden">
-            <span className="split-word inline-block will-change-transform">
+          <span
+            key={i}
+            className="inline-block overflow-hidden"
+            style={{ transform: 'translateZ(0)' }}
+          >
+            <span className="split-word inline-block">
               {word}
               {i < words.length - 1 ? '\u00A0' : ''}
             </span>
