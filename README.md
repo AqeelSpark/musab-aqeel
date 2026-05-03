@@ -19,16 +19,16 @@ Personal portfolio and case-study site — Next.js 16 App Router on Vercel-style
 ### Requirements
 
 - **Node.js 24** (pinned via `.nvmrc`, `.node-version`, and CI)
-- **npm 11.12.1** (pinned via `packageManager`, enforced by [Corepack](https://nodejs.org/api/corepack.html))
+- **pnpm** (exact version pinned via `packageManager`, enforced by [Corepack](https://nodejs.org/api/corepack.html))
 
-The npm pin avoids lockfile drift caused by different local npm versions resolving the dependency graph differently. As long as Corepack is enabled (once per machine), every `npm` invocation inside this repo uses the pinned version.
+The pnpm pin avoids lockfile drift caused by different local package managers resolving the dependency graph differently. As long as Corepack is enabled (once per machine), every `pnpm` invocation inside this repo uses the pinned version.
 
 ### Install
 
 ```bash
 nvm use            # or: fnm use, asdf shell nodejs 24, etc.
 corepack enable    # one-time, honours the packageManager pin
-npm install        # runs the postinstall that wires the pre-push hook
+pnpm install       # runs the postinstall that wires the pre-push hook
 ```
 
 ### Environment
@@ -48,24 +48,24 @@ Both variables are optional:
 ### Run locally
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                 | Purpose                                                             |
-| ---------------------- | ------------------------------------------------------------------- |
-| `npm run dev`          | Dev server with HMR (Turbopack)                                     |
-| `npm run build`        | Production build                                                    |
-| `npm run start`        | Serve the production build                                          |
-| `npm run lint`         | ESLint (flat config)                                                |
-| `npm run typecheck`    | `tsc --noEmit`                                                      |
-| `npm run test`         | Vitest run                                                          |
-| `npm run verify`       | format check + lint + typecheck + test + build — same thing CI runs |
-| `npm run format`       | Prettier write                                                      |
-| `npm run format:check` | Prettier check                                                      |
+| Script                  | Purpose                                                             |
+| ----------------------- | ------------------------------------------------------------------- |
+| `pnpm run dev`          | Dev server with HMR (Turbopack)                                     |
+| `pnpm run build`        | Production build                                                    |
+| `pnpm run start`        | Serve the production build                                          |
+| `pnpm run lint`         | ESLint (flat config)                                                |
+| `pnpm run typecheck`    | `tsc --noEmit`                                                      |
+| `pnpm run test`         | Vitest run                                                          |
+| `pnpm run verify`       | format check + lint + typecheck + test + build — same thing CI runs |
+| `pnpm run format`       | Prettier write                                                      |
+| `pnpm run format:check` | Prettier check                                                      |
 
 ## Project structure
 
@@ -112,10 +112,8 @@ proxy.ts                 Per-request nonced CSP + security headers (formerly
 
 ## Lockfile hygiene
 
-- Use `npm install` as your default. When it touches `package-lock.json`, commit the lockfile change alongside the `package.json` change that caused it.
-- Use `npm install --package-lock-only` to refresh only the lockfile (no `node_modules` churn).
-- Avoid raw `npm ci` on Windows dev machines — it nukes and reinstalls `node_modules`, hitting EPERM if any process has a native binary open. Use `npm ci` in CI only; locally let `npm install` do its thing.
-- Both the pre-push hook (`.githooks/pre-push`) and the CI workflow run `npm ci --dry-run` to block any out-of-sync lockfile from being pushed or merged. If it ever fails, run `npm install --package-lock-only` and commit the result.
+- Use `pnpm install` as your default. When it touches `pnpm-lock.yaml`, commit the lockfile change alongside the `package.json` change that caused it.
+- CI and the pre-push hook run `pnpm install --frozen-lockfile`, which fails if `pnpm-lock.yaml` does not match `package.json`. Fix with `pnpm install`, then commit `pnpm-lock.yaml`.
 
 ## Deployment
 

@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=24 <25"
   },
-  "packageManager": "npm@11.12.1",
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
+    "verify": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "postinstall": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {

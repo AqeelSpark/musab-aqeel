@@ -14,21 +14,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-
-      - name: Verify package-lock.json is in sync
-        run: |
-          if ! npm ci --dry-run --no-audit --no-fund; then
-            echo "::error::package-lock.json is out of sync with package.json. Run 'npm install --package-lock-only' locally and commit the updated lockfile."
-            exit 1
-          fi
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Verify project
-        run: npm run verify
+        run: pnpm run verify
