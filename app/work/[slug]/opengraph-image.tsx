@@ -5,7 +5,6 @@ import {
   SOCIAL_IMAGE_SIZE,
 } from '@/lib/social-image'
 
-export const runtime = 'edge'
 export const size = SOCIAL_IMAGE_SIZE
 export const contentType = SOCIAL_IMAGE_CONTENT_TYPE
 export const alt = 'Project case study by Musab Aqeel'

@@ -81,8 +81,8 @@ describe('evaluateContactAbuse', () => {
     resetContactAbuseState()
   })
 
-  it('silently rejects submissions that fill the honeypot', () => {
-    const result = evaluateContactAbuse({
+  it('silently rejects submissions that fill the honeypot', async () => {
+    const result = await evaluateContactAbuse({
       headers: createHeaders(),
       honeypotValue: 'https://spam.example',
       startedAt: 1_000,
@@ -96,43 +96,53 @@ describe('evaluateContactAbuse', () => {
     })
   })
 
-  it('rate limits repeated requests from the same IP', () => {
-    const attemptResults = Array.from({ length: 6 }, () =>
-      evaluateContactAbuse({
-        headers: createHeaders(),
-        honeypotValue: '',
-        startedAt: 1_000,
-        now: 5_000,
-      }),
-    )
+  it('rate limits repeated requests from the same IP', async () => {
+    const attemptResults = []
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      attemptResults.push(
+        await evaluateContactAbuse({
+          headers: createHeaders(),
+          honeypotValue: '',
+          startedAt: 1_000,
+          now: 5_000,
+        }),
+      )
+    }
 
     expect(attemptResults.at(-1)).toEqual({
       kind: 'reject',
       status: 429,
       code: 'rate_limited',
       error: 'Too many requests. Please wait a few minutes and try again.',
+      retryAfterSeconds: 600,
       ipAddress: '203.0.113.10',
     })
   })
 
-  it('falls back to a submission identifier when the IP address is missing', () => {
+  it('falls back to a submission identifier when the IP address is missing', async () => {
     const emptyHeaders = new Headers()
 
-    const attemptResults = Array.from({ length: 6 }, () =>
-      evaluateContactAbuse({
-        headers: emptyHeaders,
-        honeypotValue: '',
-        startedAt: 1_000,
-        fallbackIdentifier: TEST_CONTACT.email,
-        now: 5_000,
-      }),
-    )
+    const attemptResults = []
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      attemptResults.push(
+        await evaluateContactAbuse({
+          headers: emptyHeaders,
+          honeypotValue: '',
+          startedAt: 1_000,
+          fallbackIdentifier: TEST_CONTACT.email,
+          now: 5_000,
+        }),
+      )
+    }
 
     expect(attemptResults.at(-1)).toEqual({
       kind: 'reject',
       status: 429,
       code: 'rate_limited',
       error: 'Too many requests. Please wait a few minutes and try again.',
+      retryAfterSeconds: 600,
       ipAddress: null,
     })
   })
@@ -195,6 +205,10 @@ describe('webhook helpers', () => {
 })
 
 describe('contact route', () => {
+  beforeEach(() => {
+    resetContactAbuseState()
+  })
+
   it('returns a service unavailable error in production when the webhook is not configured', async () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('CONTACT_WEBHOOK_URL', '')
@@ -224,5 +238,48 @@ describe('contact route', () => {
     })
 
     consoleError.mockRestore()
+  })
+
+  it('returns Retry-After when the rate limit is exceeded', async () => {
+    vi.stubEnv('CONTACT_WEBHOOK_URL', 'https://example.com/webhooks/contact')
+
+    const fetchImpl = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 204 }))
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await POST(
+        new Request('http://localhost/api/contact', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-forwarded-for': '203.0.113.10',
+          },
+          body: JSON.stringify({
+            ...createEmptyContactSubmission(Date.now() - 5_000),
+            ...TEST_CONTACT,
+          }),
+        }),
+      )
+    }
+
+    const response = await POST(
+      new Request('http://localhost/api/contact', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': '203.0.113.10',
+        },
+        body: JSON.stringify({
+          ...createEmptyContactSubmission(Date.now() - 5_000),
+          ...TEST_CONTACT,
+        }),
+      }),
+    )
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get('Retry-After')).toBe('600')
+
+    fetchImpl.mockRestore()
   })
 })

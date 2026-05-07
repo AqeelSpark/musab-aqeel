@@ -64,6 +64,7 @@ export type ContactAbuseCheckResult =
       status: 429
       error: string
       code: 'rate_limited'
+      retryAfterSeconds: number
       ipAddress: string | null
     }
 

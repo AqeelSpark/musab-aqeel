@@ -5,14 +5,10 @@ import { SITE_DOMAIN, SITE_NAME } from '@/lib/config'
 
 /**
  * OG images intentionally use system fonts. The site's Clash Display / Fragment
- * Mono are WOFF2 only, and `next/og` (satori) doesn't decode WOFF2 under Node
- * runtime — edge runtime does, but Turbopack can't resolve
- * `new URL('...', import.meta.url)` at build time for prerender. System fonts
- * render cleanly at 1200×630 scale and keep builds deterministic; the
- * site-identity signal comes from palette, layout, grid, and mono labels.
- *
- * Routes declare `export const runtime = 'edge'` directly because Next.js
- * requires that field to be a literal string at the export site.
+ * Mono are WOFF2 only, so these routes avoid bundling custom font assets.
+ * System fonts render cleanly at 1200x630 scale, keep builds deterministic,
+ * and allow the image routes to use the default runtime without opting out of
+ * static generation.
  */
 export const SOCIAL_IMAGE_SIZE = { width: 1200, height: 630 } as const
 export const SOCIAL_IMAGE_CONTENT_TYPE = 'image/png'
@@ -81,13 +77,11 @@ const frameStyles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 1,
   },
   footerRow: {
     display: 'flex',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    zIndex: 1,
     gap: '32px',
   },
 } satisfies Record<string, CSSProperties>
@@ -269,7 +263,6 @@ function SocialImageFrame({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            zIndex: 1,
           }}
         >
           {children}

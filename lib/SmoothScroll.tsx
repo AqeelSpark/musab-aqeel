@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import Lenis from 'lenis'
+import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 
 import { LenisContext } from '@/lib/lenis-context'
@@ -19,6 +19,13 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null)
   const pathname = usePathname()
   const { isVisible: isIntroVisible, isReadyToAnimate } = useIntro()
+
+  const syncCurrentLocation = useEffectEvent(() => {
+    const lenis = lenisRef.current
+    if (!lenis || isIntroVisible || !isReadyToAnimate) return
+
+    syncLenisToCurrentLocation(lenis)
+  })
 
   useEffect(() => {
     setManualScrollRestoration()
@@ -44,11 +51,28 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   }, [isIntroVisible, isReadyToAnimate])
 
   useEffect(() => {
-    const lenis = lenisRef.current
-    if (!lenis) return
+    if (!pathname) return
 
-    syncLenisToCurrentLocation(lenis)
+    syncCurrentLocation()
   }, [pathname])
+
+  useEffect(() => {
+    if (isIntroVisible || !isReadyToAnimate || !window.location.hash) return
+
+    syncCurrentLocation()
+  }, [isIntroVisible, isReadyToAnimate])
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      syncCurrentLocation()
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [])
 
   return (
     <LenisContext.Provider value={lenisRef}>{children}</LenisContext.Provider>

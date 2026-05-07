@@ -39,12 +39,15 @@ Copy `.env.example` → `.env.local` and fill in as needed:
 
 ```bash
 CONTACT_WEBHOOK_URL=         # Make.com / Zapier / Discord webhook for the contact form
+UPSTASH_REDIS_REST_URL=      # Optional: shared rate-limit backend for contact submissions
+UPSTASH_REDIS_REST_TOKEN=    # Optional: shared rate-limit backend for contact submissions
 NEXT_PUBLIC_SITE_URL=https://musabaqeel.com
 ```
 
 Both variables are optional:
 
 - `CONTACT_WEBHOOK_URL` — when unset in development the contact route returns success without forwarding. In production it returns `503 service_unavailable` so the submission isn't silently dropped.
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — optional but recommended in production. When present, the contact rate limiter uses Upstash Redis so throttling is shared across serverless instances. Without them, the route falls back to the local in-memory limiter.
 - `NEXT_PUBLIC_SITE_URL` — defaults to `https://musabaqeel.com` via `lib/config.ts`. Override only when deploying to a different origin.
 
 ### Run locally
@@ -108,7 +111,7 @@ proxy.ts                 Per-request nonced CSP + security headers (formerly
 - **Custom cursor** (`components/ui/cursor/`) — dot + ring loose-spring follower, mix-blend-difference, state detection via `data-cursor` + DOM walking. Ripples spawn at captured click coordinates with frozen size/accent, auto-cleaned via timer.
 - **Text reveal** (`components/ui/reveal/`) — `SplitText` word-slide, `RevealText` fade-and-slide, shared scroll-trigger setup in `text-animation.ts`. Optional SVG dust distortion (`DustFilterSvg`) auto-disables on coarse-pointer devices for mobile GPU reasons.
 - **Smooth scroll** (`lib/SmoothScroll.tsx` + `lib/smooth-scroll-helpers.ts`) — Lenis on desktop wheel, native on touch (`syncTouch: false`). Scroll-navigation helpers in `lib/scroll-navigation.ts` default to a bouncy `scrollEaseOut` for programmatic scrolls. Nested scrollables opt out via `data-lenis-prevent`.
-- **Contact pipeline** (`lib/contact/`) — honeypot + timing guard + IP rate limiter + strict validation, normalized before being shipped to the configured webhook. Unit tests in `contact.test.ts` cover the full pipeline.
+- **Contact pipeline** (`lib/contact/`) — honeypot + timing guard + shared Upstash-backed rate limiting when configured (with an in-memory fallback) + strict validation, normalized before being shipped to the configured webhook. Unit tests in `contact.test.ts` cover the full pipeline.
 - **Social images** (`lib/social-image.tsx`) — `next/og` edge-runtime generation for `/opengraph-image`, `/twitter-image`, and per-project OG pages.
 - **Structured data** (`lib/structured-data.ts`) — Person + WebSite + CreativeWork JSON-LD injected at the layout root.
 

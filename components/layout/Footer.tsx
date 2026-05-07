@@ -1,4 +1,5 @@
 import { SITE_NAME, SOCIAL_LINKS } from '@/lib/config'
+import CurrentYear from '@/ui/CurrentYear'
 
 export default function Footer() {
   return (
@@ -11,7 +12,7 @@ export default function Footer() {
           className="font-mono text-xs"
           style={{ color: 'var(--color-text-tertiary)' }}
         >
-          &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
+          &copy; <CurrentYear /> {SITE_NAME}. All rights reserved.
         </p>
 
         <div className="flex items-center">

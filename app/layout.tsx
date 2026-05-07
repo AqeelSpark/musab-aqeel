@@ -10,6 +10,7 @@ import Intro from '@/components/ui/Intro'
 import IntroFilterDefs from '@/components/ui/intro/IntroFilterDefs'
 import CustomCursor from '@/components/ui/CustomCursor'
 import { IntroProvider } from '@/lib/IntroContext'
+import { scroll } from '@/lib/motion'
 import { personJsonLd, websiteJsonLd } from '@/lib/structured-data'
 import {
   SITE_NAME,
@@ -148,6 +149,10 @@ export const viewport: Viewport = {
   themeColor: '#131313',
 }
 
+function serializeJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c')
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -161,14 +166,12 @@ export default function RootLayout({
       <head>
         {/* JSON-LD is not subject to CSP script-src because it is not a script
           MIME type. */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
+        <script type="application/ld+json">
+          {serializeJsonLd(personJsonLd)}
+        </script>
+        <script type="application/ld+json">
+          {serializeJsonLd(websiteJsonLd)}
+        </script>
       </head>
       <body>
         <a href="#main-content" className="skip-link">
@@ -183,7 +186,11 @@ export default function RootLayout({
           <SmoothScroll>
             <MainWrapper>
               <Nav />
-              <main id="main-content" tabIndex={-1}>
+              <main
+                id="main-content"
+                tabIndex={-1}
+                style={{ scrollMarginTop: `${scroll.headerOffset}px` }}
+              >
                 {children}
               </main>
             </MainWrapper>

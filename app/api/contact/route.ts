@@ -14,14 +14,19 @@ function jsonSuccess() {
   return NextResponse.json<ContactApiSuccessResponse>({ success: true })
 }
 
-function jsonError(error: string, status: number, code: ContactApiErrorCode) {
+function jsonError(
+  error: string,
+  status: number,
+  code: ContactApiErrorCode,
+  init?: ResponseInit,
+) {
   return NextResponse.json<ContactApiErrorResponse>(
     {
       success: false,
       error,
       code,
     },
-    { status },
+    { status, ...init },
   )
 }
 
@@ -76,7 +81,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const abuseCheck = evaluateContactAbuse({
+    const abuseCheck = await evaluateContactAbuse({
       headers: request.headers,
       honeypotValue: parsedSubmission.data.metadata.honeypotValue,
       startedAt: parsedSubmission.data.metadata.startedAt,
@@ -89,7 +94,11 @@ export async function POST(request: Request) {
       case 'silently_reject':
         return jsonSuccess()
       case 'reject':
-        return jsonError(abuseCheck.error, abuseCheck.status, abuseCheck.code)
+        return jsonError(abuseCheck.error, abuseCheck.status, abuseCheck.code, {
+          headers: {
+            'Retry-After': String(abuseCheck.retryAfterSeconds),
+          },
+        })
       default: {
         const exhaustiveCheck: never = abuseCheck
         return exhaustiveCheck

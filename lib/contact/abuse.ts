@@ -1,3 +1,5 @@
+import { Redis } from '@upstash/redis'
+
 import {
   CONTACT_MIN_SUBMISSION_TIME_MS,
   CONTACT_RATE_LIMIT_MAX_REQUESTS,
@@ -10,17 +12,19 @@ interface RateLimitEntry {
   resetAt: number
 }
 
+const CONTACT_RATE_LIMIT_REDIS_KEY_PREFIX = 'contact-rate-limit'
+
 /**
- * In-process rate-limit store. This is intentionally simple and is correct
- * only for a single long-lived instance. On a multi-instance / serverless
- * deployment each replica gets its own map, so the limit is best-effort.
- * Swap this for Upstash Redis / Vercel KV / similar if robust limiting is
- * required.
+ * Local fallback store used when a shared backend is unavailable.
  */
 const rateLimitStore = new Map<string, RateLimitEntry>()
 
 /** Hard cap to prevent unbounded growth from a flood of unique keys. */
 const MAX_RATE_LIMIT_ENTRIES = 5_000
+
+let upstashRedisClient: Redis | null | undefined
+let hasWarnedAboutRateLimitFallback = false
+let hasLoggedUpstashRateLimitFailure = false
 
 function getFirstHeaderValue(headers: Headers, name: string): string | null {
   const value = headers.get(name)
@@ -56,6 +60,133 @@ function cleanupExpiredRateLimitEntries(now: number) {
   }
 }
 
+function getUpstashRedisClient(): Redis | null {
+  if (upstashRedisClient !== undefined) {
+    return upstashRedisClient
+  }
+
+  if (
+    !process.env.UPSTASH_REDIS_REST_URL ||
+    !process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
+    upstashRedisClient = null
+    return upstashRedisClient
+  }
+
+  upstashRedisClient = Redis.fromEnv({
+    enableAutoPipelining: false,
+    latencyLogging: false,
+  })
+
+  return upstashRedisClient
+}
+
+function buildRedisRateLimitKey(rateLimitKey: string) {
+  return `${CONTACT_RATE_LIMIT_REDIS_KEY_PREFIX}:${rateLimitKey}`
+}
+
+function warnAboutInMemoryRateLimitFallback() {
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    hasWarnedAboutRateLimitFallback
+  ) {
+    return
+  }
+
+  hasWarnedAboutRateLimitFallback = true
+  console.warn(
+    'UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not configured; falling back to the in-memory contact rate limiter.',
+  )
+}
+
+function logUpstashRateLimitFailure(error: unknown) {
+  if (hasLoggedUpstashRateLimitFailure) {
+    return
+  }
+
+  hasLoggedUpstashRateLimitFailure = true
+  console.error(
+    'Contact rate limiting could not reach Upstash Redis; falling back to the in-memory limiter.',
+    error,
+  )
+}
+
+function recordRateLimitAttemptInMemory(
+  rateLimitKey: string,
+  now: number,
+): RateLimitEntry {
+  cleanupExpiredRateLimitEntries(now)
+
+  const currentEntry = rateLimitStore.get(rateLimitKey)
+
+  if (!currentEntry) {
+    const entry = {
+      count: 1,
+      resetAt: now + CONTACT_RATE_LIMIT_WINDOW_MS,
+    }
+    rateLimitStore.set(rateLimitKey, entry)
+    return entry
+  }
+
+  currentEntry.count += 1
+  return currentEntry
+}
+
+async function recordRateLimitAttemptWithUpstash(
+  rateLimitKey: string,
+  now: number,
+): Promise<RateLimitEntry | null> {
+  const redis = getUpstashRedisClient()
+  if (!redis) {
+    return null
+  }
+
+  const redisKey = buildRedisRateLimitKey(rateLimitKey)
+
+  try {
+    const tx = redis.multi()
+    tx.incr(redisKey)
+    tx.pttl(redisKey)
+
+    const [countResult, ttlResult] = (await tx.exec()) as [number, number]
+    const count = Number(countResult)
+    let ttlMs = Number(ttlResult)
+
+    if (!Number.isFinite(count)) {
+      throw new Error(
+        'Upstash rate limit counter returned a non-numeric value.',
+      )
+    }
+
+    if (!Number.isFinite(ttlMs) || ttlMs < 0) {
+      await redis.pexpire(redisKey, CONTACT_RATE_LIMIT_WINDOW_MS, 'NX')
+      ttlMs = CONTACT_RATE_LIMIT_WINDOW_MS
+    }
+
+    return {
+      count,
+      resetAt: now + ttlMs,
+    }
+  } catch (error) {
+    logUpstashRateLimitFailure(error)
+    return null
+  }
+}
+
+async function recordRateLimitAttempt(
+  rateLimitKey: string,
+  now: number,
+): Promise<RateLimitEntry> {
+  const remoteEntry = await recordRateLimitAttemptWithUpstash(rateLimitKey, now)
+
+  if (remoteEntry) {
+    return remoteEntry
+  }
+
+  warnAboutInMemoryRateLimitFallback()
+  return recordRateLimitAttemptInMemory(rateLimitKey, now)
+}
+
 export function getClientIpAddress(headers: Headers): string | null {
   const ipAddress =
     getFirstHeaderValue(headers, 'cf-connecting-ip') ??
@@ -84,7 +215,7 @@ function resolveRateLimitKey({
   return null
 }
 
-export function evaluateContactAbuse({
+export async function evaluateContactAbuse({
   headers,
   honeypotValue,
   startedAt,
@@ -96,7 +227,7 @@ export function evaluateContactAbuse({
   startedAt: number
   fallbackIdentifier?: string
   now?: number
-}): ContactAbuseCheckResult {
+}): Promise<ContactAbuseCheckResult> {
   const ipAddress = getClientIpAddress(headers)
 
   if (honeypotValue) {
@@ -127,33 +258,21 @@ export function evaluateContactAbuse({
     }
   }
 
-  cleanupExpiredRateLimitEntries(now)
+  const currentEntry = await recordRateLimitAttempt(rateLimitKey, now)
 
-  const currentEntry = rateLimitStore.get(rateLimitKey)
-
-  if (!currentEntry) {
-    rateLimitStore.set(rateLimitKey, {
-      count: 1,
-      resetAt: now + CONTACT_RATE_LIMIT_WINDOW_MS,
-    })
-
-    return {
-      kind: 'allow',
-      ipAddress,
-    }
-  }
-
-  if (currentEntry.count >= CONTACT_RATE_LIMIT_MAX_REQUESTS) {
+  if (currentEntry.count > CONTACT_RATE_LIMIT_MAX_REQUESTS) {
     return {
       kind: 'reject',
       status: 429,
       code: 'rate_limited',
       error: 'Too many requests. Please wait a few minutes and try again.',
+      retryAfterSeconds: Math.max(
+        1,
+        Math.ceil((currentEntry.resetAt - now) / 1_000),
+      ),
       ipAddress,
     }
   }
-
-  currentEntry.count += 1
 
   return {
     kind: 'allow',
@@ -163,4 +282,7 @@ export function evaluateContactAbuse({
 
 export function resetContactAbuseState() {
   rateLimitStore.clear()
+  upstashRedisClient = undefined
+  hasWarnedAboutRateLimitFallback = false
+  hasLoggedUpstashRateLimitFailure = false
 }
