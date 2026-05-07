@@ -66,8 +66,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm run typecheck`    | `tsc --noEmit`                                                      |
 | `pnpm run test`         | Vitest run                                                          |
 | `pnpm run verify`       | format check + lint + typecheck + test + build — same thing CI runs |
-| `pnpm run format`       | Prettier write                                                      |
-| `pnpm run format:check` | Prettier check                                                      |
+| `pnpm run format`       | Biome format write                                                  |
+| `pnpm run format:check` | Biome format check                                                  |
 
 ## Project structure
 

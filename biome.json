@@ -1,0 +1,29 @@
+{
+  "files": {
+    "includes": [
+      "**",
+      "!**/.next/**",
+      "!**/out/**",
+      "!**/build/**",
+      "!**/node_modules/**",
+      "!**/next-env.d.ts",
+      "!**/pnpm-lock.yaml",
+      "!**/public/**"
+    ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded"
+    }
+  }
+}
