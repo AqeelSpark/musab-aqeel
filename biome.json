@@ -1,4 +1,5 @@
 {
+  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
   "files": {
     "includes": [
       "**",
@@ -9,7 +10,8 @@
       "!**/next-env.d.ts",
       "!**/pnpm-lock.yaml",
       "!**/public/**"
-    ]
+    ],
+    "ignoreUnknown": true
   },
   "css": {
     "parser": {
@@ -25,5 +27,11 @@
       "quoteStyle": "single",
       "semicolons": "asNeeded"
     }
+  },
+  "linter": {
+    "enabled": false
+  },
+  "assist": {
+    "enabled": false
   }
 }
