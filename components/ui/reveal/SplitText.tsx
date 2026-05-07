@@ -1,7 +1,7 @@
 'use client'
 
-import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { gsap } from 'gsap'
+import { type CSSProperties, useLayoutEffect, useRef } from 'react'
 
 import DustFilterSvg from '@/components/ui/reveal/DustFilterSvg'
 import {
@@ -209,7 +209,8 @@ export default function SplitText({
       >
         {words.map((word, i) => (
           <span
-            key={i}
+            // biome-ignore lint/suspicious/noArrayIndexKey: words may repeat within a single phrase; the list is static and never reorders.
+            key={`${i}-${word}`}
             className="inline-block overflow-hidden"
             style={{ transform: 'translateZ(0)' }}
           >

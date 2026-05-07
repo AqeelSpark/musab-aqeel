@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
 import { gsap } from 'gsap'
+import { useEffect, useRef } from 'react'
 
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
 
@@ -79,16 +79,17 @@ export default function HamburgerIcon({ isOpen, onClick }: HamburgerIconProps) {
 
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-label={isOpen ? 'Close menu' : 'Open menu'}
       aria-expanded={isOpen}
       className="relative z-50 ml-auto flex h-10 w-10 items-center justify-end lg:hidden"
     >
       {/* 22 × 11.5 hit area with absolute-positioned lines */}
-      <div className="relative h-[11.5px] w-[22px]">
+      <div className="relative h-[11.5px] w-5.5">
         <span
           ref={topRef}
-          className="absolute top-0 right-0 block h-[1.5px] w-[22px] origin-center"
+          className="absolute top-0 right-0 block h-[1.5px] w-5.5 origin-center"
           style={{ backgroundColor: 'var(--color-text-primary)' }}
         />
         <span

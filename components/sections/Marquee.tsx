@@ -65,7 +65,11 @@ function MarqueeRow({
       >
         <div className="flex items-center">
           {repeated.map((item, i) => (
-            <span key={`${i}-${item}`} className="flex shrink-0 items-center">
+            <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: items list is duplicated and may contain repeats; the row is static, aria-hidden, and never reorders.
+              key={`${i}-${item}`}
+              className="flex shrink-0 items-center"
+            >
               <span
                 className="px-5 font-mono text-base whitespace-nowrap md:px-7 md:text-lg"
                 style={{ color: 'var(--color-text-secondary)' }}
