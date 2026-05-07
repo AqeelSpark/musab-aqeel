@@ -18,15 +18,17 @@ Personal portfolio and case-study site — Next.js 16 App Router on Vercel-style
 
 ### Requirements
 
-- **Node.js 24.15.0** (pinned via `.nvmrc`, `.node-version`, `package.json`, and CI)
+- **Node.js 24.x** across deployment, local development, and CI (`package.json#engines`, `.nvmrc`, `.node-version`, and CI all follow the same major-version policy)
 - **pnpm** (exact version pinned via `packageManager`, enforced by [Corepack](https://nodejs.org/api/corepack.html))
 
 The pnpm pin avoids lockfile drift caused by different local package managers resolving the dependency graph differently. As long as Corepack is enabled (once per machine), every `pnpm` invocation inside this repo uses the pinned version.
 
+The Node policy is intentionally major-version based: deployment platforms like Vercel expose supported Node versions as majors such as `24.x`, and local tooling now follows the same policy to avoid patch-level drift between environments.
+
 ### Install
 
 ```bash
-nvm use            # or: fnm use, asdf shell nodejs 24.15.0, etc.
+nvm use            # or: fnm use, asdf shell nodejs 24, etc.
 corepack enable    # one-time, honours the packageManager pin
 pnpm install       # runs the postinstall that wires the pre-push hook
 ```
