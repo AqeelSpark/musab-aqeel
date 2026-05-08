@@ -1,4 +1,7 @@
-import { FAVICON_96_URL, SITE_DOMAIN } from '../config'
+import { SITE_DOMAIN, SITE_URL } from '../config'
+import { APP_VERSION } from '../package-version'
+
+const CONTACT_FAVICON_URL = `${SITE_URL}/favicons/favicon-96x96.png?v=${APP_VERSION}`
 
 import { CONTACT_WEBHOOK_TIMEOUT_MS } from './constants'
 import type {
@@ -15,7 +18,7 @@ function buildDiscordPayload(
 ): ContactWebhookPayload {
   return {
     username: SITE_DOMAIN,
-    avatar_url: FAVICON_96_URL,
+    avatar_url: CONTACT_FAVICON_URL,
     embeds: [
       {
         author: {
@@ -37,11 +40,11 @@ function buildDiscordPayload(
           { name: '📝  Message', value: `>>> ${contact.message}` },
         ],
         thumbnail: {
-          url: FAVICON_96_URL,
+          url: CONTACT_FAVICON_URL,
         },
         footer: {
           text: `${SITE_DOMAIN}  •  Contact Form`,
-          icon_url: FAVICON_96_URL,
+          icon_url: CONTACT_FAVICON_URL,
         },
         timestamp,
       },

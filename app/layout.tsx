@@ -19,6 +19,7 @@ import {
   SITE_URL,
   TWITTER_HANDLE,
 } from '@/lib/config'
+import { APP_VERSION } from '@/lib/package-version'
 import './globals.css'
 
 const clashDisplay = localFont({
@@ -133,13 +134,20 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicons/favicon.ico', sizes: 'any' },
-      { url: '/favicons/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicons/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: `/favicons/favicon.ico?v=${APP_VERSION}`, sizes: 'any' },
+      {
+        url: `/favicons/favicon.svg?v=${APP_VERSION}`,
+        type: 'image/svg+xml',
+      },
+      {
+        url: `/favicons/favicon-96x96.png?v=${APP_VERSION}`,
+        sizes: '96x96',
+        type: 'image/png',
+      },
     ],
-    apple: '/favicons/apple-touch-icon.png',
+    apple: `/favicons/apple-touch-icon.png?v=${APP_VERSION}`,
   },
-  manifest: '/favicons/site.webmanifest',
+  manifest: `/favicons/site.webmanifest?v=${APP_VERSION}`,
 }
 
 export const viewport: Viewport = {

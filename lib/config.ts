@@ -18,7 +18,6 @@ export const COMPANY_NAME = 'Dupixo'
 export const TWITTER_HANDLE = '@aqeelmusab'
 export const CONTACT_EMAIL = 'hello@musabaqeel.com'
 export const CONTACT_EMAIL_HREF = `mailto:${CONTACT_EMAIL}`
-export const FAVICON_96_URL = `${SITE_URL}/favicons/favicon-96x96.png`
 
 export const SOCIAL_LINKS: readonly SocialLink[] = [
   {

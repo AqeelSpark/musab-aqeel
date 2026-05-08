@@ -4,6 +4,7 @@ import { POST } from '../../app/api/contact/route'
 import { createEmptyContactSubmission } from './constants'
 import { evaluateContactAbuse, resetContactAbuseState } from './abuse'
 import { parseContactSubmission } from './validation'
+import { APP_VERSION } from '../package-version'
 import {
   buildContactWebhookPayload,
   resolveWebhookTarget,
@@ -170,7 +171,7 @@ describe('webhook helpers', () => {
 
     expect(payload).toMatchObject({
       username: 'musabaqeel.com',
-      avatar_url: 'https://musabaqeel.com/favicons/favicon-96x96.png',
+      avatar_url: `https://musabaqeel.com/favicons/favicon-96x96.png?v=${APP_VERSION}`,
       embeds: [
         {
           description: '**Musab Aqeel** submitted a project inquiry.',
