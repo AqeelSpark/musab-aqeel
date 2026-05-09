@@ -1,6 +1,6 @@
 # Musab Aqeel
 
-Personal portfolio and case-study site. Next.js 16 App Router with Vercel-style static output, plus motion via GSAP, Motion (formerly Framer Motion), and Lenis.
+Personal portfolio and case-study site. Next.js 16 App Router: the home and work surfaces prerender like you'd expect on Vercel, but this is not `output: 'export'`; production is still `next start` on Node. GSAP, Motion (formerly Framer Motion), and Lenis handle the motion layer.
 
 ## Stack
 
@@ -11,7 +11,7 @@ Personal portfolio and case-study site. Next.js 16 App Router with Vercel-style 
 - **Lenis** smooth wheel scroll on desktop (native touch on mobile)
 - **Tailwind CSS 4** plus a small hand-written layer in `globals.css`
 - **Vitest** for domain tests (contact pipeline for now)
-- **Proxy** (Next 16’s renamed middleware) for per-request CSP nonces
+- **Proxy** (Next 16's renamed middleware): sets CSP on matched requests. Script-src skips nonces so static routes still hydrate; the comment at the top of `proxy.ts` explains the tradeoff.
 - **CI and git hooks** keep the lockfile honest and run the full verify pipeline
 
 ## Getting started
@@ -68,7 +68,7 @@ Then open [http://localhost:3000](http://localhost:3000).
 | `pnpm run lint`         | ESLint (flat config)                                                |
 | `pnpm run typecheck`    | `tsc --noEmit`                                                      |
 | `pnpm run test`         | Vitest run                                                          |
-| `pnpm run verify`       | format check + lint + typecheck + test + build (what CI runs)      |
+| `pnpm run verify`       | format check + lint + typecheck + test + build (what CI runs)       |
 | `pnpm run format`       | Biome format write                                                  |
 | `pnpm run format:check` | Biome format check                                                  |
 
@@ -99,7 +99,7 @@ lib/
 public/                  Favicons, fonts (Clash Display / Satoshi /
                          Fragment Mono), project images
 types/                   Shared TS types + re-exports
-proxy.ts                 Nonced CSP + security headers (used to be
+proxy.ts                 CSP + security headers (used to be
                          middleware.ts before Next 16)
 .githooks/pre-push       Lockfile check; enabled by postinstall
 .github/workflows/ci.yml Lint + typecheck + test + build on PR/push
