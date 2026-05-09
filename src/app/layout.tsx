@@ -3,13 +3,13 @@ import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import localFont from 'next/font/local'
-import SmoothScroll from '@/lib/SmoothScroll'
+import SmoothScroll from '@/lib/contexts/SmoothScroll'
 import Nav from '@/components/layout/Nav'
 import MainWrapper from '@/components/layout/MainWrapper'
 import Intro from '@/components/ui/Intro'
 import IntroFilterDefs from '@/components/ui/intro/IntroFilterDefs'
 import CustomCursor from '@/components/ui/CustomCursor'
-import { IntroProvider } from '@/lib/IntroContext'
+import { IntroProvider } from '@/lib/contexts/IntroContext'
 import { scroll } from '@/lib/motion'
 import { personJsonLd, websiteJsonLd } from '@/lib/structured-data'
 import {
@@ -25,19 +25,19 @@ import './globals.css'
 const clashDisplay = localFont({
   src: [
     {
-      path: '../public/fonts/ClashDisplay/ClashDisplay-Regular.woff2',
+      path: '../../public/fonts/ClashDisplay/ClashDisplay-Regular.woff2',
       weight: '400',
     },
     {
-      path: '../public/fonts/ClashDisplay/ClashDisplay-Medium.woff2',
+      path: '../../public/fonts/ClashDisplay/ClashDisplay-Medium.woff2',
       weight: '500',
     },
     {
-      path: '../public/fonts/ClashDisplay/ClashDisplay-Semibold.woff2',
+      path: '../../public/fonts/ClashDisplay/ClashDisplay-Semibold.woff2',
       weight: '600',
     },
     {
-      path: '../public/fonts/ClashDisplay/ClashDisplay-Bold.woff2',
+      path: '../../public/fonts/ClashDisplay/ClashDisplay-Bold.woff2',
       weight: '700',
     },
   ],
@@ -47,10 +47,10 @@ const clashDisplay = localFont({
 
 const satoshi = localFont({
   src: [
-    { path: '../public/fonts/Satoshi/Satoshi-Light.woff2', weight: '300' },
-    { path: '../public/fonts/Satoshi/Satoshi-Regular.woff2', weight: '400' },
-    { path: '../public/fonts/Satoshi/Satoshi-Medium.woff2', weight: '500' },
-    { path: '../public/fonts/Satoshi/Satoshi-Bold.woff2', weight: '700' },
+    { path: '../../public/fonts/Satoshi/Satoshi-Light.woff2', weight: '300' },
+    { path: '../../public/fonts/Satoshi/Satoshi-Regular.woff2', weight: '400' },
+    { path: '../../public/fonts/Satoshi/Satoshi-Medium.woff2', weight: '500' },
+    { path: '../../public/fonts/Satoshi/Satoshi-Bold.woff2', weight: '700' },
   ],
   variable: '--font-body',
   display: 'swap',
@@ -59,7 +59,7 @@ const satoshi = localFont({
 const fragmentMono = localFont({
   src: [
     {
-      path: '../public/fonts/FragmentMono/FragmentMono-Regular.woff2',
+      path: '../../public/fonts/FragmentMono/FragmentMono-Regular.woff2',
       weight: '400',
     },
   ],

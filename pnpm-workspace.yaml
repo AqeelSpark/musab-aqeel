@@ -1,3 +1,5 @@
+# Single-package repo: no `packages:` globs. pnpm 11 stores `allowBuilds` here for
+# dependency install-script approval (strictDepBuilds), not because this is a monorepo.
 allowBuilds:
   sharp: true
   unrs-resolver: true

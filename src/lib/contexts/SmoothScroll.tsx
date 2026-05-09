@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import type Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 
-import { LenisContext } from '@/lib/lenis-context'
-import { useIntro } from '@/lib/IntroContext'
+import { LenisContext } from '@/lib/contexts/lenis-context'
+import { useIntro } from '@/lib/contexts/IntroContext'
 import {
   attachLenisTicker,
   createLenisInstance,

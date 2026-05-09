@@ -1,16 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { POST } from '../../app/api/contact/route'
-import { createEmptyContactSubmission } from './constants'
-import { evaluateContactAbuse, resetContactAbuseState } from './abuse'
-import { parseContactSubmission } from './validation'
-import { APP_VERSION } from '../package-version'
+import { POST } from '@/app/api/contact/route'
+import {
+  evaluateContactAbuse,
+  resetContactAbuseState,
+} from '@/lib/contact/abuse'
+import { createEmptyContactSubmission } from '@/lib/contact/constants'
+import type { ContactPayload } from '@/lib/contact/types'
+import { parseContactSubmission } from '@/lib/contact/validation'
 import {
   buildContactWebhookPayload,
   resolveWebhookTarget,
   sendContactWebhook,
-} from './webhook'
-import type { ContactPayload } from './types'
+} from '@/lib/contact/webhook'
+import { APP_VERSION } from '@/lib/package-version'
 
 const TEST_CONTACT: ContactPayload = {
   name: 'Musab Aqeel',

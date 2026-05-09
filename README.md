@@ -5,13 +5,13 @@ Personal portfolio and case-study site. Next.js 16 App Router: the home and work
 ## Stack
 
 - **Next.js 16** App Router, Turbopack build, React 19
-- **TypeScript** strict mode, `@/` path alias at repo root
+- **TypeScript** strict mode, `@/` path alias → `src/`
 - **GSAP** scroll-triggered reveals, intro choreography, cursor/logo micro-animations
 - **Motion** layout transitions, magnetic buttons, mobile menu clip-path, cursor springs
 - **Lenis** smooth wheel scroll on desktop (native touch on mobile)
-- **Tailwind CSS 4** plus a small hand-written layer in `globals.css`
-- **Vitest** for domain tests (contact pipeline for now)
-- **Proxy** (Next 16's renamed middleware): sets CSP on matched requests. Script-src skips nonces so static routes still hydrate; the comment at the top of `proxy.ts` explains the tradeoff.
+- **Tailwind CSS 4** plus a small hand-written layer in `src/app/globals.css`
+- **Vitest** for domain specs under `tests/` (layout mirrors `src/` where helpful)
+- **Proxy** (Next 16's renamed middleware): sets CSP on matched requests. Script-src skips nonces so static routes still hydrate; the comment at the top of `src/proxy.ts` explains the tradeoff.
 - **CI and git hooks** keep the lockfile honest and run the full verify pipeline
 
 ## Getting started
@@ -48,7 +48,7 @@ Optional vars:
 
 - **`CONTACT_WEBHOOK_URL`** In dev, unset means the route still returns success but doesn’t forward. In production, unset returns `503 service_unavailable` so nothing gets dropped quietly.
 - **`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`** Nice to have in prod. With them, rate limiting hits Upstash Redis across serverless instances. Without, it falls back to in-memory per instance.
-- **`NEXT_PUBLIC_SITE_URL`** Defaults to `https://musabaqeel.com` in `lib/config.ts`. Change only if your deploy origin differs.
+- **`NEXT_PUBLIC_SITE_URL`** Defaults to `https://musabaqeel.com` in `src/lib/config.ts`. Change only if your deploy origin differs.
 
 ### Run locally
 
@@ -75,51 +75,55 @@ Then open [http://localhost:3000](http://localhost:3000).
 ## Project structure
 
 ```text
-app/                     Routes, layouts, metadata, OG/Twitter images,
+src/
+  app/                   Routes, layouts, metadata, OG/Twitter images,
                          robots + sitemap, contact handler
-components/
-  layout/                Nav shell, hamburger, main-wrapper reveal (intro handoff)
-    nav/                 Desktop + mobile nav (hooks, pieces)
-  sections/              Home: Hero, Work, Process, About, Contact, …
-  ui/
-    cursor/              Custom cursor (hook, visuals, constants)
-    intro/               Short splash: morph text, counter, SVG defs
-    reveal/              Scroll reveals: SplitText, RevealText,
+  components/
+    layout/              Nav shell, hamburger, main-wrapper reveal (intro handoff)
+      nav/               Desktop + mobile nav (hooks, pieces)
+    sections/            Home: Hero, Work, Process, About, Contact, …
+    ui/
+      cursor/            Custom cursor (hook, visuals, constants)
+      intro/             Short splash: morph text, counter, SVG defs
+      reveal/            Scroll reveals: SplitText, RevealText,
                          DustFilterSvg, shared text-animation hook,
                          ScrollTrigger cleanup hook
-    …                    Primitives: BackButton, HamburgerIcon, Logo,
+      …                  Primitives: BackButton, HamburgerIcon, Logo,
                          MagneticButton, Tag, CustomCursor, Intro
-  work/                  Case-study layout + ProjectCard
-lib/
-  contact/               Validation, abuse checks, webhook, tests
-  project-data/          One module per project
-  …                      Config, motion tokens, smooth-scroll helpers,
-                         social images, structured data, intro/lenis
-                         providers, scroll helpers, media-query hooks
+    work/                Case-study layout + ProjectCard
+  lib/
+    contexts/            Intro + Lenis providers, SmoothScroll shell
+    contact/             Validation, abuse checks, webhook
+    project-data/        One module per project
+    …                    Config, motion tokens, smooth-scroll helpers,
+                         social images, structured data, scroll helpers,
+                         media-query hooks
+  types/                 Shared TS types + re-exports
+  proxy.ts               CSP + security headers (used to be
+                         middleware.ts before Next 16)
+tests/                   Vitest specs mirroring `app/` + `lib/` shape
 public/                  Favicons, fonts (Clash Display / Satoshi /
                          Fragment Mono), project images
-types/                   Shared TS types + re-exports
-proxy.ts                 CSP + security headers (used to be
-                         middleware.ts before Next 16)
+pnpm-workspace.yaml      allowBuilds only (pnpm 11); not a monorepo
 .githooks/pre-push       Lockfile check; enabled by postinstall
 .github/workflows/ci.yml Lint + typecheck + test + build on PR/push
 ```
 
 ## Notable systems
 
-- **Intro** (`components/ui/Intro.tsx`, `lib/IntroContext.tsx`): ~3s splash on first load. Role words morph (Developer / Architect / Operator) through an SVG alpha filter mounted at the body (`IntroFilterDefs`) so Safari behaves. Counter animates in with per-character stagger. Exit moves the panel with `yPercent: -105` and lifts the wrapper in parallel; no clip-path, fewer browser headaches.
+- **Intro** (`src/components/ui/Intro.tsx`, `src/lib/contexts/IntroContext.tsx`): ~3s splash on first load. Role words morph (Developer / Architect / Operator) through an SVG alpha filter mounted at the body (`IntroFilterDefs`) so Safari behaves. Counter animates in with per-character stagger. Exit moves the panel with `yPercent: -105` and lifts the wrapper in parallel; no clip-path, fewer browser headaches.
 
-- **Custom cursor** (`components/ui/cursor/`): dot + ring follower with loose springs, `mix-blend-difference`, state from `data-cursor` and DOM walks. Click ripples use captured coords and fixed size/color; timers clean them up.
+- **Custom cursor** (`src/components/ui/cursor/`): dot + ring follower with loose springs, `mix-blend-difference`, state from `data-cursor` and DOM walks. Click ripples use captured coords and fixed size/color; timers clean them up.
 
-- **Text reveal** (`components/ui/reveal/`): `SplitText` word slides, `RevealText` fade/slide, shared scroll wiring in `text-animation.ts`. Optional `DustFilterSvg` distortion turns off on coarse pointers to spare mobile GPUs.
+- **Text reveal** (`src/components/ui/reveal/`): `SplitText` word slides, `RevealText` fade/slide, shared scroll wiring in `text-animation.ts`. Optional `DustFilterSvg` distortion turns off on coarse pointers to spare mobile GPUs.
 
-- **Smooth scroll** (`lib/SmoothScroll.tsx`, `lib/smooth-scroll-helpers.ts`): Lenis on desktop wheel, native touch (`syncTouch: false`). `lib/scroll-navigation.ts` defaults programmatic scrolls to a bouncy `scrollEaseOut`. Nested scroll areas opt out with `data-lenis-prevent`.
+- **Smooth scroll** (`src/lib/contexts/SmoothScroll.tsx`, `src/lib/smooth-scroll-helpers.ts`): Lenis on desktop wheel, native touch (`syncTouch: false`). `src/lib/scroll-navigation.ts` defaults programmatic scrolls to a bouncy `scrollEaseOut`. Nested scroll areas opt out with `data-lenis-prevent`.
 
-- **Contact** (`lib/contact/`): honeypot, timing guard, Upstash-backed rate limit when configured (in-memory fallback otherwise), strict validation, then webhook. `contact.test.ts` exercises the path end to end.
+- **Contact** (`src/lib/contact/`): honeypot, timing guard, Upstash-backed rate limit when configured (in-memory fallback otherwise), strict validation, then webhook. `tests/lib/contact/contact.test.ts` exercises the path end to end.
 
-- **Social images** (`lib/social-image.tsx`): `next/og` for `/opengraph-image`, `/twitter-image`, and per-project OG routes.
+- **Social images** (`src/lib/social-image.tsx`): `next/og` for `/opengraph-image`, `/twitter-image`, and per-project OG routes.
 
-- **Structured data** (`lib/structured-data.ts`): Person + WebSite + CreativeWork JSON-LD at the layout root.
+- **Structured data** (`src/lib/structured-data.ts`): Person + WebSite + CreativeWork JSON-LD at the layout root.
 
 ## Lockfile hygiene
 
@@ -129,4 +133,4 @@ proxy.ts                 CSP + security headers (used to be
 
 ## Deployment
 
-No vendor-specific config: plain Next.js 16. Anything that can run `next start` on Node 24 is fine. `proxy.ts` runs as expected on Vercel-style setups.
+No vendor-specific config: plain Next.js 16. Anything that can run `next start` on Node 24 is fine. `src/proxy.ts` runs as expected on Vercel-style setups.

@@ -2,7 +2,7 @@
 
 import AnimatedCounter from '@/components/ui/intro/AnimatedCounter'
 import { useIntroAnimation } from '@/components/ui/intro/useIntroAnimation'
-import { useIntro } from '@/lib/IntroContext'
+import { useIntro } from '@/lib/contexts/IntroContext'
 
 /**
  * Cosmetic intro screen. Stays on screen for 3 s while the three-word morph

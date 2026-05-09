@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useId, useRef, type CSSProperties } from 'react'
 
 import { useScrollTriggerCleanup } from '@/components/ui/reveal/useScrollTriggerCleanup'
-import { useIntro } from '@/lib/IntroContext'
+import { useIntro } from '@/lib/contexts/IntroContext'
 import { useIsCoarsePointer } from '@/lib/useIsCoarsePointer'
 import { scroll } from '@/lib/motion'
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'

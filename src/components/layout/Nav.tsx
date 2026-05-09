@@ -20,8 +20,8 @@ import {
 } from '@/components/layout/nav/useNavState'
 import HamburgerIcon from '@/components/ui/HamburgerIcon'
 import Logo from '@/components/ui/Logo'
-import { useIntro } from '@/lib/IntroContext'
-import { useLenisRef } from '@/lib/lenis-context'
+import { useIntro } from '@/lib/contexts/IntroContext'
+import { useLenisRef } from '@/lib/contexts/lenis-context'
 import { scrollToHashSection, scrollToPageTop } from '@/lib/scroll-navigation'
 
 // Post-menu-close scroll sits longer so the bouncy settle has room to read.
