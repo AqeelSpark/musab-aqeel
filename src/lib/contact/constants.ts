@@ -40,7 +40,6 @@ export const CONTACT_BUDGET_MAP = {
   ReadonlyArray<ContactBudgetOption>
 >
 
-export const CONTACT_BUDGET_PLACEHOLDER_DISABLED = 'Select project type first'
 export const CONTACT_BUDGET_PLACEHOLDER_ENABLED = 'Select range'
 
 export const CONTACT_HONEYPOT_FIELD_NAME = 'website'

@@ -11,7 +11,6 @@ import SplitText from '@/components/ui/reveal/SplitText'
 import RevealText from '@/components/ui/reveal/RevealText'
 import MagneticButton from '@/components/ui/MagneticButton'
 import {
-  CONTACT_BUDGET_PLACEHOLDER_DISABLED,
   CONTACT_BUDGET_PLACEHOLDER_ENABLED,
   CONTACT_HONEYPOT_FIELD_NAME,
   CONTACT_PROJECT_TYPES,
@@ -21,6 +20,8 @@ import {
   type ContactFormStatus,
   type ContactSubmission,
 } from '@/lib/contact'
+
+const BUDGET_HELPER_ID = 'contact-budget-helper'
 import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from '@/lib/config'
 
 const SelectArrow = () => (
@@ -203,6 +204,7 @@ export default function Contact() {
                   type="text"
                   name="name"
                   required
+                  autoComplete="name"
                   value={form.name}
                   onChange={handleChange}
                   placeholder="Your name"
@@ -224,6 +226,8 @@ export default function Contact() {
                   type="email"
                   name="email"
                   required
+                  autoComplete="email"
+                  inputMode="email"
                   value={form.email}
                   onChange={handleChange}
                   placeholder="your@email.com"
@@ -278,12 +282,13 @@ export default function Contact() {
                       onChange={handleChange}
                       disabled={isBudgetDisabled}
                       aria-disabled={isBudgetDisabled}
-                      className={`${inputClass} appearance-none pr-10 disabled:cursor-not-allowed disabled:opacity-60 ${form.budget ? 'text-theme-primary' : 'text-theme-tertiary'}`}
+                      aria-describedby={
+                        isBudgetDisabled ? BUDGET_HELPER_ID : undefined
+                      }
+                      className={`${inputClass} appearance-none pr-10 transition-opacity duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${form.budget ? 'text-theme-primary' : 'text-theme-tertiary'}`}
                     >
                       <option value="" disabled>
-                        {isBudgetDisabled
-                          ? CONTACT_BUDGET_PLACEHOLDER_DISABLED
-                          : CONTACT_BUDGET_PLACEHOLDER_ENABLED}
+                        {CONTACT_BUDGET_PLACEHOLDER_ENABLED}
                       </option>
                       {!isBudgetDisabled &&
                         budgetOptions.map((opt) => (
@@ -294,6 +299,14 @@ export default function Contact() {
                     </select>
                     <SelectArrow />
                   </div>
+                  {isBudgetDisabled && (
+                    <p
+                      id={BUDGET_HELPER_ID}
+                      className="text-theme-tertiary mt-1.5 font-mono text-xs"
+                    >
+                      Pick a project type to unlock
+                    </p>
+                  )}
                 </div>
               </div>
             </RevealText>
@@ -339,7 +352,7 @@ export default function Contact() {
               <MagneticButton
                 className="btn-outline mt-2 w-full"
                 type="submit"
-                disabled={status === 'sending'}
+                disabled={status === 'sending' || status === 'sent'}
               >
                 {status === 'sending'
                   ? 'Sending...'
