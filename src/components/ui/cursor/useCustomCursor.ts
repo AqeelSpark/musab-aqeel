@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { animate, useMotionValue, useSpring } from 'motion/react'
 
-import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion'
 
 import {
   CURSOR_RIPPLE_MS,

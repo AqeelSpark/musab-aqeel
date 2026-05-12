@@ -10,7 +10,7 @@ import {
   logoGlitchState2,
   logoGlitchState3,
 } from '@/lib/logo-paths'
-import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion'
 
 interface LogoProps {
   onClick?: (e: MouseEvent) => void

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { gsap } from 'gsap'
 import Tag from '@/components/ui/Tag'
-import { ProjectCoverImage } from '@/components/work/primitives'
+import { ProjectCoverImage } from '@/components/work/ProjectCoverImage'
 import type { Project } from '@/types'
 
 const TRANSITION_DURATION_MS = 350

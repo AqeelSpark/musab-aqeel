@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react'
 
-import { useIntroBootstrap } from '@/lib/intro-bootstrap'
+import { useIntroBootstrap } from '@/lib/contexts/useIntroBootstrap'
 
 interface IntroContextValue {
   /** The cosmetic intro is currently on screen. */

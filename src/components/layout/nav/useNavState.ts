@@ -11,7 +11,7 @@ import {
 } from 'react'
 import type Lenis from 'lenis'
 
-import { useLenisRef } from '@/lib/contexts/lenis-context'
+import { useLenisRef } from '@/lib/contexts/LenisContext'
 
 import {
   ACTIVE_SECTION_THRESHOLD,

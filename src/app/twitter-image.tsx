@@ -3,7 +3,7 @@ import {
   createHomeSocialImage,
   SOCIAL_IMAGE_CONTENT_TYPE,
   SOCIAL_IMAGE_SIZE,
-} from '@/lib/social-image'
+} from '@/lib/SocialImage'
 
 export const alt = SITE_SHORT_TITLE
 export const size = SOCIAL_IMAGE_SIZE

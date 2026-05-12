@@ -5,9 +5,9 @@ import { useId, useRef, type CSSProperties } from 'react'
 
 import { useScrollTriggerCleanup } from '@/components/ui/reveal/useScrollTriggerCleanup'
 import { useIntro } from '@/lib/contexts/IntroContext'
-import { useIsCoarsePointer } from '@/lib/useIsCoarsePointer'
+import { useIsCoarsePointer } from '@/lib/hooks/useIsCoarsePointer'
 import { scroll } from '@/lib/motion'
-import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion'
 
 export function getRevealScrollStart(delay: number) {
   return delay !== 0

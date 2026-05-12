@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState, type ReactNode } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-import { useMainWrapperReveal } from '@/components/layout/useMainWrapperReveal'
+import { useMainWrapperReveal } from '@/components/layout/main-wrapper/useMainWrapperReveal'
 import { useIntro } from '@/lib/contexts/IntroContext'
 
 export default function MainWrapper({ children }: { children: ReactNode }) {

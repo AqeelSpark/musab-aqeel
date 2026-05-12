@@ -3,7 +3,7 @@ import {
   createProjectSocialImage,
   SOCIAL_IMAGE_CONTENT_TYPE,
   SOCIAL_IMAGE_SIZE,
-} from '@/lib/social-image'
+} from '@/lib/SocialImage'
 
 export const size = SOCIAL_IMAGE_SIZE
 export const contentType = SOCIAL_IMAGE_CONTENT_TYPE

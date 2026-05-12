@@ -74,44 +74,70 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 ## Project structure
 
+File-naming conventions: components are `PascalCase.tsx`, hook files are `useFoo.ts`,
+plain utilities/modules are `kebab-case.ts`. Each feature with internals lives in
+its own subfolder (entry component + helpers + hooks + constants); flat
+primitives without internals sit at the parent level.
+
 ```text
 src/
-  app/                   Routes, layouts, metadata, OG/Twitter images,
-                         robots + sitemap, contact handler
+  app/                       Routes, layouts, metadata, OG/Twitter images,
+                             robots + sitemap, contact handler
   components/
-    layout/              Nav shell, hamburger, main-wrapper reveal (intro handoff)
-      nav/               Desktop + mobile nav (hooks, pieces)
-    sections/            Home: Hero, Work, Process, About, Contact, …
+    layout/
+      Footer.tsx             Flat — no internals
+      nav/                   Desktop + mobile nav
+        Nav.tsx              Entry
+        NavPieces.tsx        Desktop links, mobile menu pieces
+        useNavState.ts       Header/active-section/mobile-menu hooks
+        constants.ts
+      main-wrapper/          Main wrapper + intro-handoff reveal
+        MainWrapper.tsx
+        useMainWrapperReveal.ts
+    sections/                Home: Hero, Work, Process, About, Contact, …
     ui/
-      cursor/            Custom cursor (hook, visuals, constants)
-      intro/             Short splash: morph text, counter, SVG defs
-      reveal/            Scroll reveals: SplitText, RevealText,
-                         DustFilterSvg, shared text-animation hook,
-                         ScrollTrigger cleanup hook
-      …                  Primitives: BackButton, HamburgerIcon, Logo,
-                         MagneticButton, Tag, CustomCursor, Intro
-    work/                Case-study layout + ProjectCard
+      cursor/                Custom cursor
+        CustomCursor.tsx     Entry
+        CursorVisual.tsx
+        useCustomCursor.ts
+        constants.ts
+      intro/                 Short splash: morph text, counter, SVG defs
+        Intro.tsx            Entry
+        AnimatedCounter.tsx
+        IntroFilterDefs.tsx
+        useIntroAnimation.ts
+      reveal/                Scroll reveals: SplitText, RevealText,
+                             DustFilterSvg, shared text-animation utils,
+                             ScrollTrigger cleanup hook
+      …                      Flat primitives: BackButton, CurrentYear,
+                             HamburgerIcon, Logo, MagneticButton, Tag
+    work/                    Case-study layout, ProjectCard,
+                             WorkSection (+ WorkDivider), ProjectCoverImage
   lib/
-    contexts/            Intro + Lenis providers, SmoothScroll shell
-    contact/             Validation, abuse checks, webhook
-    project-data/        One module per project
-    …                    Config, motion tokens, smooth-scroll helpers,
-                         social images, structured data, scroll helpers,
-                         media-query hooks
-  types/                 Shared TS types + re-exports
-  proxy.ts               CSP + security headers (used to be
-                         middleware.ts before Next 16)
-tests/                   Vitest specs mirroring `app/` + `lib/` shape
-public/                  Favicons, fonts (Clash Display / Satoshi /
-                         Fragment Mono), project images
-pnpm-workspace.yaml      allowBuilds only (pnpm 11); not a monorepo
-.githooks/pre-push       Lockfile check; enabled by postinstall
-.github/workflows/ci.yml Lint + typecheck + test + build on PR/push
+    contexts/                Intro + Lenis providers, SmoothScroll shell,
+                             useIntroBootstrap
+    contact/                 Validation, abuse checks, webhook
+    hooks/                   Cross-cutting hooks: useIsCoarsePointer,
+                             usePrefersReducedMotion
+    project-data/            One module per project
+    SocialImage.tsx          next/og template shared by OG/Twitter routes
+    …                        Config, motion tokens, smooth-scroll helpers,
+                             structured data, scroll helpers,
+                             page-end scrub completion
+  types/                     Shared TS types + re-exports
+  proxy.ts                   CSP + security headers (used to be
+                             middleware.ts before Next 16)
+tests/                       Vitest specs mirroring `app/` + `lib/` shape
+public/                      Favicons, fonts (Clash Display / Satoshi /
+                             Fragment Mono), project images
+pnpm-workspace.yaml          allowBuilds only (pnpm 11); not a monorepo
+.githooks/pre-push           Lockfile check; enabled by postinstall
+.github/workflows/ci.yml     Lint + typecheck + test + build on PR/push
 ```
 
 ## Notable systems
 
-- **Intro** (`src/components/ui/Intro.tsx`, `src/lib/contexts/IntroContext.tsx`): ~3s splash on first load. Role words morph (Developer / Architect / Operator) through an SVG alpha filter mounted at the body (`IntroFilterDefs`) so Safari behaves. Counter animates in with per-character stagger. Exit moves the panel with `yPercent: -105` and lifts the wrapper in parallel; no clip-path, fewer browser headaches.
+- **Intro** (`src/components/ui/intro/Intro.tsx`, `src/lib/contexts/IntroContext.tsx`): ~3s splash on first load. Role words morph (Developer / Architect / Operator) through an SVG alpha filter mounted at the body (`IntroFilterDefs`) so Safari behaves. Counter animates in with per-character stagger. Exit moves the panel with `yPercent: -105` and lifts the wrapper in parallel; no clip-path, fewer browser headaches.
 
 - **Custom cursor** (`src/components/ui/cursor/`): dot + ring follower with loose springs, `mix-blend-difference`, state from `data-cursor` and DOM walks. Click ripples use captured coords and fixed size/color; timers clean them up.
 
@@ -121,7 +147,7 @@ pnpm-workspace.yaml      allowBuilds only (pnpm 11); not a monorepo
 
 - **Contact** (`src/lib/contact/`): honeypot, timing guard, Upstash-backed rate limit when configured (in-memory fallback otherwise), strict validation, then webhook. `tests/lib/contact/contact.test.ts` exercises the path end to end.
 
-- **Social images** (`src/lib/social-image.tsx`): `next/og` for `/opengraph-image`, `/twitter-image`, and per-project OG routes.
+- **Social images** (`src/lib/SocialImage.tsx`): `next/og` for `/opengraph-image`, `/twitter-image`, and per-project OG routes.
 
 - **Structured data** (`src/lib/structured-data.ts`): Person + WebSite + CreativeWork JSON-LD at the layout root.
 

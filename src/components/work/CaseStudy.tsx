@@ -4,11 +4,8 @@ import { motion } from 'motion/react'
 import RevealText from '@/components/ui/reveal/RevealText'
 import Tag from '@/components/ui/Tag'
 import ProjectCard from '@/components/work/ProjectCard'
-import {
-  ProjectCoverImage,
-  WorkDivider,
-  WorkSection,
-} from '@/components/work/primitives'
+import { ProjectCoverImage } from '@/components/work/ProjectCoverImage'
+import { WorkDivider, WorkSection } from '@/components/work/WorkSection'
 import { ease } from '@/lib/motion'
 import { getOtherProjects } from '@/lib/projects'
 import type { Project } from '@/types'

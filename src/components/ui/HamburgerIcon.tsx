@@ -3,7 +3,7 @@
 import { gsap } from 'gsap'
 import { useEffect, useRef } from 'react'
 
-import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion'
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion'
 
 interface HamburgerIconProps {
   isOpen: boolean
