@@ -37,6 +37,7 @@ const FONT_STACK_MONO =
 
 const frameStyles = {
   root: {
+    position: 'relative',
     width: '100%',
     height: '100%',
     backgroundColor: palette.bg,
@@ -56,14 +57,20 @@ const frameStyles = {
     backgroundImage: `repeating-linear-gradient(105deg, ${palette.border} 0px, ${palette.border} 1px, transparent 1px, transparent 14px)`,
     opacity: 0.28,
   },
+  /**
+   * Soft top-right glow drawn entirely inside the 1200×630 canvas. Satori clips
+   * overflow on flex/abs children, so a huge circle with negative offsets was
+   * shearing off at the image edges (“glow chop”). In-bounds radial avoids that.
+   */
   accentWash: {
     position: 'absolute',
-    top: '-260px',
-    right: '-220px',
-    width: '820px',
-    height: '820px',
-    borderRadius: '50%',
-    background: `radial-gradient(circle, rgba(212, 255, 0, 0.12) 0%, rgba(212, 255, 0, 0) 65%)`,
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    background: `radial-gradient(ellipse 980px 720px at 86% 6%, rgba(212, 255, 0, 0.11) 0%, rgba(212, 255, 0, 0.045) 38%, rgba(212, 255, 0, 0) 68%)`,
   },
   body: {
     flex: 1,
@@ -249,10 +256,10 @@ function SocialImageFrame({
 }) {
   return (
     <div style={frameStyles.root}>
+      <div style={frameStyles.accentWash} />
       <div style={frameStyles.accentBar} />
       <div style={frameStyles.body}>
         <div style={frameStyles.grid} />
-        <div style={frameStyles.accentWash} />
 
         <div style={frameStyles.headerRow}>
           <DomainBadge />
