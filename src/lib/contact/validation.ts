@@ -135,13 +135,13 @@ export function parseContactSubmission(
     )
   }
 
-  const projectTypeLabel = getProjectTypeLabel(projectTypeValue)
-  if (projectTypeLabel === null) {
+  // Use the label lookups as null-returning validators; the canonical payload
+  // stores slugs so display copy stays decoupled from the data contract.
+  if (getProjectTypeLabel(projectTypeValue) === null) {
     return fail('Please choose a valid project type.', 'invalid_payload')
   }
 
-  const budgetLabel = getBudgetLabel(projectTypeValue, budgetValue)
-  if (budgetLabel === null) {
+  if (getBudgetLabel(projectTypeValue, budgetValue) === null) {
     return fail('Please choose a valid budget range.', 'invalid_payload')
   }
 
@@ -151,8 +151,8 @@ export function parseContactSubmission(
       payload: {
         name,
         email,
-        budget: budgetLabel,
-        projectType: projectTypeLabel,
+        budget: budgetValue,
+        projectType: projectTypeValue,
         message,
       },
       metadata: {

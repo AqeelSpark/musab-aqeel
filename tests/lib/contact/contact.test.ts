@@ -15,21 +15,13 @@ import {
 } from '@/lib/contact/webhook'
 import { APP_VERSION } from '@/lib/package-version'
 
-// Form submissions carry the slug values; the API resolves them to labels.
-const TEST_SUBMISSION = {
+// Slugs are the canonical contact-payload shape end-to-end; webhook builders
+// resolve them to display labels at render time.
+const TEST_CONTACT: ContactPayload = {
   name: 'Musab Aqeel',
   email: 'hello@musabaqeel.com',
   budget: 'under_3k',
   projectType: 'surgical',
-  message: 'Build a new product landing page.',
-}
-
-// What the rest of the pipeline (webhook, etc.) sees post-validation.
-const TEST_CONTACT: ContactPayload = {
-  name: 'Musab Aqeel',
-  email: 'hello@musabaqeel.com',
-  budget: 'Under $3k (Scoped Fix)',
-  projectType: 'Surgical Fix / Optimization',
   message: 'Build a new product landing page.',
 }
 
@@ -62,8 +54,8 @@ describe('parseContactSubmission', () => {
         payload: {
           name: 'Musab Aqeel',
           email: 'hello@musabaqeel.com',
-          budget: 'Under $3k (Scoped Fix)',
-          projectType: 'Surgical Fix / Optimization',
+          budget: 'under_3k',
+          projectType: 'surgical',
           message: 'Need a production-ready build.',
         },
         metadata: {
@@ -77,7 +69,7 @@ describe('parseContactSubmission', () => {
   it('rejects invalid option values', () => {
     const result = parseContactSubmission({
       ...createEmptyContactSubmission(2_000),
-      ...TEST_SUBMISSION,
+      ...TEST_CONTACT,
       budget: 'Totally custom budget',
     })
 
@@ -93,7 +85,7 @@ describe('parseContactSubmission', () => {
     // 'under_3k' is valid under 'surgical' but not under 'build'.
     const result = parseContactSubmission({
       ...createEmptyContactSubmission(2_000),
-      ...TEST_SUBMISSION,
+      ...TEST_CONTACT,
       projectType: 'build',
       budget: 'under_3k',
     })
@@ -211,6 +203,40 @@ describe('webhook helpers', () => {
     })
   })
 
+  it('renders slug-shaped contact fields as human-readable labels', () => {
+    const payload = buildContactWebhookPayload({
+      contact: TEST_CONTACT,
+      webhookUrl: 'https://discord.com/api/webhooks/123/abc',
+      now: new Date('2026-04-16T12:00:00.000Z'),
+    }) as { embeds: Array<{ fields: Array<{ name: string; value: string }> }> }
+
+    const fields = payload.embeds[0].fields
+    const budgetField = fields.find((f) => f.name.includes('Budget'))
+    const projectTypeField = fields.find((f) => f.name.includes('Project Type'))
+
+    expect(budgetField?.value).toBe('`Under $3k (Scoped Fix)`')
+    expect(projectTypeField?.value).toBe('`Surgical Fix / Optimization`')
+  })
+
+  it('includes both slugs and resolved labels in the generic webhook payload', () => {
+    const payload = buildContactWebhookPayload({
+      contact: TEST_CONTACT,
+      webhookUrl: 'https://example.com/webhooks/contact',
+      now: new Date('2026-04-16T12:00:00.000Z'),
+    })
+
+    expect(payload).toMatchObject({
+      budget: 'under_3k',
+      projectType: 'surgical',
+      display: {
+        budget: 'Under $3k (Scoped Fix)',
+        projectType: 'Surgical Fix / Optimization',
+      },
+      source: 'contact-form',
+      timestamp: '2026-04-16T12:00:00.000Z',
+    })
+  })
+
   it('returns a structured failure when webhook delivery fails', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const fetchImpl = vi.fn(async () => {
@@ -255,7 +281,7 @@ describe('contact route', () => {
         },
         body: JSON.stringify({
           ...createEmptyContactSubmission(Date.now() - 5_000),
-          ...TEST_SUBMISSION,
+          ...TEST_CONTACT,
         }),
       }),
     )
@@ -288,7 +314,7 @@ describe('contact route', () => {
           },
           body: JSON.stringify({
             ...createEmptyContactSubmission(Date.now() - 5_000),
-            ...TEST_SUBMISSION,
+            ...TEST_CONTACT,
           }),
         }),
       )
@@ -303,7 +329,7 @@ describe('contact route', () => {
         },
         body: JSON.stringify({
           ...createEmptyContactSubmission(Date.now() - 5_000),
-          ...TEST_SUBMISSION,
+          ...TEST_CONTACT,
         }),
       }),
     )

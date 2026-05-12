@@ -3,7 +3,11 @@ import { APP_VERSION } from '../package-version'
 
 const CONTACT_FAVICON_URL = `${SITE_URL}/favicons/favicon-96x96.png?v=${APP_VERSION}`
 
-import { CONTACT_WEBHOOK_TIMEOUT_MS } from './constants'
+import {
+  CONTACT_WEBHOOK_TIMEOUT_MS,
+  getBudgetLabel,
+  getProjectTypeLabel,
+} from './constants'
 import type {
   ContactPayload,
   ContactWebhookDeliveryResult,
@@ -12,10 +16,24 @@ import type {
 
 type ContactWebhookPayload = Record<string, unknown>
 
+// Resolves slug-shaped fields to their human-readable labels for rendering.
+// Falls back to the raw slug if the lookup misses (e.g. a replayed payload
+// that bypassed validation), so we never silently drop data.
+function humanize(contact: ContactPayload): ContactPayload {
+  return {
+    ...contact,
+    projectType:
+      getProjectTypeLabel(contact.projectType) ?? contact.projectType,
+    budget:
+      getBudgetLabel(contact.projectType, contact.budget) ?? contact.budget,
+  }
+}
+
 function buildDiscordPayload(
   contact: ContactPayload,
   timestamp: string,
 ): ContactWebhookPayload {
+  const display = humanize(contact)
   return {
     username: SITE_DOMAIN,
     avatar_url: CONTACT_FAVICON_URL,
@@ -24,20 +42,20 @@ function buildDiscordPayload(
         author: {
           name: '📬  New Project Inquiry',
         },
-        description: `**${contact.name}** submitted a project inquiry.`,
+        description: `**${display.name}** submitted a project inquiry.`,
         color: 0xd4ff00,
         fields: [
-          { name: '👤  Name', value: `\`${contact.name}\``, inline: true },
-          { name: '📧  Email', value: `\`${contact.email}\``, inline: true },
+          { name: '👤  Name', value: `\`${display.name}\``, inline: true },
+          { name: '📧  Email', value: `\`${display.email}\``, inline: true },
           { name: '\u200b', value: '\u200b', inline: true },
-          { name: '💰  Budget', value: `\`${contact.budget}\``, inline: true },
+          { name: '💰  Budget', value: `\`${display.budget}\``, inline: true },
           {
             name: '📁  Project Type',
-            value: `\`${contact.projectType}\``,
+            value: `\`${display.projectType}\``,
             inline: true,
           },
           { name: '\u200b', value: '\u200b', inline: true },
-          { name: '📝  Message', value: `>>> ${contact.message}` },
+          { name: '📝  Message', value: `>>> ${display.message}` },
         ],
         thumbnail: {
           url: CONTACT_FAVICON_URL,
@@ -53,6 +71,7 @@ function buildDiscordPayload(
 }
 
 function buildSlackPayload(contact: ContactPayload): ContactWebhookPayload {
+  const display = humanize(contact)
   return {
     blocks: [
       {
@@ -62,15 +81,15 @@ function buildSlackPayload(contact: ContactPayload): ContactWebhookPayload {
       {
         type: 'section',
         fields: [
-          { type: 'mrkdwn', text: `*Name:*\n${contact.name}` },
-          { type: 'mrkdwn', text: `*Email:*\n${contact.email}` },
-          { type: 'mrkdwn', text: `*Budget:*\n${contact.budget}` },
-          { type: 'mrkdwn', text: `*Project Type:*\n${contact.projectType}` },
+          { type: 'mrkdwn', text: `*Name:*\n${display.name}` },
+          { type: 'mrkdwn', text: `*Email:*\n${display.email}` },
+          { type: 'mrkdwn', text: `*Budget:*\n${display.budget}` },
+          { type: 'mrkdwn', text: `*Project Type:*\n${display.projectType}` },
         ],
       },
       {
         type: 'section',
-        text: { type: 'mrkdwn', text: `*Message:*\n${contact.message}` },
+        text: { type: 'mrkdwn', text: `*Message:*\n${display.message}` },
       },
     ],
   }
@@ -80,8 +99,11 @@ function buildGenericPayload(
   contact: ContactPayload,
   timestamp: string,
 ): ContactWebhookPayload {
+  // Generic consumers get both the raw slug payload and a `display` object
+  // with resolved labels — they can pick whichever is easier to consume.
   return {
     ...contact,
+    display: humanize(contact),
     source: 'contact-form',
     timestamp,
   }
