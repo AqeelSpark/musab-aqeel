@@ -70,10 +70,12 @@ Then open [http://localhost:3000](http://localhost:3000).
 | `pnpm run lint:fix`        | Biome check with safe autofixes applied                            |
 | `pnpm run typecheck`       | `tsc --noEmit`                                                     |
 | `pnpm run test`            | Vitest run                                                         |
+| `pnpm run test:e2e:install`| Install Playwright Chromium binary                                 |
 | `pnpm run test:e2e`        | Playwright end-to-end tests (Chromium)                             |
 | `pnpm run test:e2e:headed` | Playwright e2e in a headed browser                                 |
 | `pnpm run test:e2e:ui`     | Playwright e2e in interactive UI mode                              |
-| `pnpm run verify`          | lint + typecheck + test + build (the CI verify job)                |
+| `pnpm run verify:quick`    | lint + typecheck + test + build (fast local loop)                  |
+| `pnpm run verify`          | Full gate: `verify:quick` plus Playwright install and e2e tests    |
 | `pnpm run format`          | Biome format write                                                 |
 
 ## Project structure
@@ -120,7 +122,7 @@ src/
 tests/                    Vitest specs mirroring src/; tests/e2e/ holds Playwright specs
 public/                   Favicons, fonts (Clash Display / Satoshi / Fragment Mono), project images
 .githooks/pre-push        Lockfile check; enabled by postinstall
-.github/workflows/ci.yml  verify job (format + lint + typecheck + test + build) plus a browser-tests job (Playwright e2e) on PR/push
+.github/workflows/ci.yml  single verify job on PR/push (full verify including Playwright e2e)
 ```
 
 ## Notable systems

@@ -14,11 +14,13 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "test": "vitest run",
+    "test:e2e:install": "playwright install chromium",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "verify:quick": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "verify": "pnpm run verify:quick && pnpm run test:e2e:install && pnpm run test:e2e",
     "postinstall": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
@@ -29,13 +31,13 @@
     "gsap": "3.15.0",
     "lenis": "1.3.25",
     "motion": "12.42.2",
-    "next": "16.2.11",
+    "next": "16.2.12",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.62.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.13.3",
     "@types/react": "19.2.17",
