@@ -19,6 +19,10 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
   },
+  // tsc --noEmit already gates verify/CI before build; TS 7 has no compiler API yet for Next's in-process check.
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return [
       {
